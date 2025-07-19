@@ -7,28 +7,53 @@ describe('MusicPage', () => {
     expect(screen.getByText('Music')).toBeInTheDocument();
   });
 
-  it('renders the video title', () => {
+  it('renders the video section title', () => {
     render(<MusicPage />);
-    expect(screen.getByText('Interstate Love Song')).toBeInTheDocument();
+    const videoTitle = screen.getAllByText('Interstate Love Song')[0]; // Get the first occurrence (section title)
+    expect(videoTitle).toBeInTheDocument();
+    expect(videoTitle.tagName).toBe('H2');
   });
 
-  it('renders the video element', () => {
+  it('renders the video iframe', () => {
     render(<MusicPage />);
     const video = screen.getByTestId('music-video');
     expect(video).toBeInTheDocument();
+    expect(video.tagName).toBe('IFRAME');
   });
 
-  it('video has correct source', () => {
+  it('video iframe has correct src', () => {
     render(<MusicPage />);
     const video = screen.getByTestId('music-video');
-    const source = video.querySelector('source');
-    expect(source).toHaveAttribute('src', '/Interstate Love Song - Lower Banner.mp4');
-    expect(source).toHaveAttribute('type', 'video/mp4');
+    expect(video).toHaveAttribute('src', 'https://www.youtube.com/embed/Lh-VdQjkhBo?rel=0');
   });
 
-  it('video has controls', () => {
+  it('video iframe has correct title', () => {
     render(<MusicPage />);
     const video = screen.getByTestId('music-video');
-    expect(video).toHaveAttribute('controls');
+    expect(video).toHaveAttribute('title', 'Echo Blvd - Interstate Love Song');
+  });
+
+  it('renders the latest tracks section', () => {
+    render(<MusicPage />);
+    expect(screen.getByText('Latest Tracks')).toBeInTheDocument();
+  });
+
+  it('renders track cards with specific content', () => {
+    render(<MusicPage />);
+    // Test for specific button text to avoid conflicts
+    expect(screen.getByText('Listen on Spotify')).toBeInTheDocument();
+    expect(screen.getByText('View Shows')).toBeInTheDocument();
+  });
+
+  it('renders social media section', () => {
+    render(<MusicPage />);
+    expect(screen.getByText('Follow Echo Blvd')).toBeInTheDocument();
+  });
+
+  it('renders YouTube fallback link', () => {
+    render(<MusicPage />);
+    const youtubeLink = screen.getByText('Watch on YouTube');
+    expect(youtubeLink).toBeInTheDocument();
+    expect(youtubeLink).toHaveAttribute('href', 'https://www.youtube.com/watch?v=Lh-VdQjkhBo');
   });
 }); 
