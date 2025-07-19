@@ -18,6 +18,7 @@
 - **TypeScript strict mode**: No `any`, strict null checks
 - **Jest/Vitest**: Testing framework (TDD approach)
 - **React Testing Library**: Component testing
+- **Git LFS**: Large file storage for video and SVG assets
 
 ### Performance & Optimization
 - **Next.js Image**: Optimized image handling
