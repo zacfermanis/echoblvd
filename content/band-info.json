@@ -1,0 +1,57 @@
+{
+  "name": "Echo Blvd",
+  "description": "A dynamic rock band creating powerful, melodic music that resonates with raw emotion and authentic energy",
+  "genre": "Rock",
+  "location": "Los Angeles, CA",
+  "members": [
+    {
+      "name": "Alex Rivera",
+      "role": "Lead Vocals & Guitar",
+      "bio": "Frontman and primary songwriter, Alex brings raw emotion and powerful vocals to every performance.",
+      "image": "/images/members/alex-rivera.jpg",
+      "socialLinks": {
+        "instagram": "https://instagram.com/alexrivera",
+        "twitter": "https://twitter.com/alexrivera"
+      }
+    },
+    {
+      "name": "Sarah Chen",
+      "role": "Bass & Backing Vocals",
+      "bio": "Sarah's melodic bass lines and harmonies create the foundation of Echo Blvd's signature sound.",
+      "image": "/images/members/sarah-chen.jpg",
+      "socialLinks": {
+        "instagram": "https://instagram.com/sarahchen"
+      }
+    },
+    {
+      "name": "Mike Thompson",
+      "role": "Drums",
+      "bio": "Mike's dynamic drumming drives the band's energy and keeps audiences moving.",
+      "image": "/images/members/mike-thompson.jpg",
+      "socialLinks": {
+        "instagram": "https://instagram.com/mikethompson"
+      }
+    }
+  ],
+  "contact": {
+    "email": "hello@echoblvd.com",
+    "bookingEmail": "booking@echoblvd.com",
+    "pressEmail": "press@echoblvd.com",
+    "socialLinks": {
+      "instagram": "https://www.instagram.com/echoblvdband/",
+      "facebook": "https://www.facebook.com/echoblvdmusic",
+      "youtube": "https://www.youtube.com/@EchoBlvdBand",
+      "spotify": "https://open.spotify.com/artist/echoblvd",
+      "bandcamp": "https://echoblvd.bandcamp.com"
+    }
+  },
+  "pressKit": {
+    "bio": "Echo Blvd emerged from the vibrant Los Angeles music scene, creating powerful rock music that connects with audiences through authentic storytelling and dynamic performances. Their music blends raw energy with melodic craftsmanship, delivering an experience that resonates deeply with listeners.",
+    "photos": [
+      "/images/press/band-photo-1.jpg",
+      "/images/press/band-photo-2.jpg",
+      "/images/press/band-photo-3.jpg"
+    ],
+    "logo": "/images/logo/echo-blvd-logo.png"
+  }
+} 
