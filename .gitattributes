@@ -1,6 +1,4 @@
 *.mp4 filter=lfs diff=lfs merge=lfs -text
-*.svg filter=lfs diff=lfs merge=lfs -text
-*.svg !text !filter !merge !diff
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.mov filter=lfs diff=lfs merge=lfs -text
 *_part_* filter=lfs diff=lfs merge=lfs -text
