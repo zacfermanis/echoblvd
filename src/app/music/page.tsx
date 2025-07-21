@@ -19,7 +19,7 @@ export default function MusicPage() {
         {/* Featured Video */}
         <div className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
-            Interstate Love Song
+            Interstate Love Song (Stone Temple Pilots cover)
           </h2>
           <div className="relative w-full max-w-4xl mx-auto">
             {/* YouTube Embed - Echo Blvd Interstate Love Song */}
@@ -52,6 +52,42 @@ export default function MusicPage() {
           </div>
         </div>
         
+        {/* Additional Featured Video */}
+        <div className="mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+            Times Like These (Foo Fighters Cover)
+          </h2>
+          <div className="relative w-full max-w-4xl mx-auto">
+            {/* YouTube Embed - Echo Blvd Live at The Viper Room */}
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+                src="https://www.youtube.com/embed/DsotI2Xwd2E?rel=0"
+                title="Echo Blvd - Times Like These (Foo Fighters Cover)"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                data-testid="music-video-viper"
+              />
+            </div>
+            
+            {/* Fallback message for when video doesn't load */}
+            <div className="mt-4 text-center">
+              <p className="text-gray-400 text-sm">
+                Having trouble with the video?{' '}
+                <a 
+                  href="https://www.youtube.com/watch?v=DsotI2Xwd2E" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline"
+                >
+                  Watch Echo Blvd&#39;s cover of &quot;Times Like These&quot; on YouTube
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+        
         {/* Music Tracks Section */}
         <div className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
@@ -62,9 +98,8 @@ export default function MusicPage() {
             <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Interstate Love Song</h3>
               <p className="text-gray-400 mb-4">From our latest album</p>
-              <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Listen on Spotify
-              </button>
+              {/* No Spotify button - streaming links coming soon */}
+              <p className="text-gray-500 italic">Streaming links coming soon</p>
             </div>
             
             {/* Track Card 2 */}

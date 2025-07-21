@@ -41,6 +41,10 @@
 - ✅ **ENHANCED: Music page with track cards and social media section**
 - ✅ **REMOVED: Large video file and Git LFS configuration**
 - ✅ **UPDATED: Tests to work with new YouTube iframe structure**
+- ✅ **ADDED: Second YouTube video (Times Like These - Foo Fighters cover) to music page**
+- ✅ **UPDATED: Interstate Love Song video title to reflect Stone Temple Pilots cover**
+- ✅ **REMOVED: All Spotify references and streaming links from music page**
+- ✅ **MIGRATED: Custom SVG loader from Webpack to Turbopack config (now using Turbopack for dev/build)**
 
 ## Next Steps
 1. **Phase 3: Complete Content Implementation**
@@ -129,7 +133,7 @@
 
 ## Current Status
 - **Phase**: Content implementation (Phase 3)
-- **Progress**: Music page complete with YouTube video
+- **Progress**: Music page complete with two YouTube covers (Stone Temple Pilots and Foo Fighters), no Spotify or streaming links, Turbopack config migration complete
 - **Next milestone**: Shows page implementation
 - **Blockers**: None currently identified
 
