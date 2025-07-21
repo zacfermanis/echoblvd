@@ -70,6 +70,8 @@
 - ✅ **UPDATED: Tests to work with new YouTube iframe structure**
 - ✅ **IMPLEMENTED: Contact page with functional form, email API route, and comprehensive tests**
 - ✅ **FIXED: Contact form 500 error with development mode fallback and better error handling**
+- ✅ **STANDARDIZED: Social media links across all pages to match main page URLs**
+- ✅ **REMOVED: Down arrow from hero section (no functionality)**
 
 ### In Progress
 - 🔄 Content implementation (Phase 3) - Shows page next

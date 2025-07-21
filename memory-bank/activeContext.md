@@ -47,6 +47,8 @@
 - ✅ **MIGRATED: Custom SVG loader from Webpack to Turbopack config (now using Turbopack for dev/build)**
 - ✅ **IMPLEMENTED: Contact page with functional form, email API route, and comprehensive tests**
 - ✅ **FIXED: Contact form 500 error with development mode fallback and better error handling**
+- ✅ **STANDARDIZED: Social media links across all pages to match main page URLs**
+- ✅ **REMOVED: Down arrow from hero section (no functionality)**
 
 ## Next Steps
 1. **Phase 3: Complete Content Implementation**
@@ -83,6 +85,7 @@
 - **Performance focus**: Fast loading times for music content
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Video optimization**: Use YouTube embeds instead of self-hosted large files
+- **Consistent branding**: All social media links use the same URLs across all pages
 
 ### Content Strategy
 - **Static content**: Markdown files for band information
