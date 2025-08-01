@@ -16,7 +16,43 @@ export default function MusicPage() {
           Listen to our latest tracks and albums
         </p>
         
-        {/* Featured Video */}
+        {/* Featured Video - Shimmer (Most Recent) */}
+        <div className="mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
+            Shimmer (Fuel Cover)
+          </h2>
+          <div className="relative w-full max-w-4xl mx-auto">
+            {/* YouTube Embed - Echo Blvd Shimmer Cover */}
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+                src="https://www.youtube.com/embed/_QzF31T5jsg?rel=0"
+                title="Echo Blvd - Shimmer (Fuel Cover)"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                data-testid="music-video-shimmer"
+              />
+            </div>
+            
+            {/* Fallback message for when video doesn't load */}
+            <div className="mt-4 text-center">
+              <p className="text-gray-400 text-sm">
+                Having trouble with the video?{' '}
+                <a 
+                  href="https://www.youtube.com/watch?v=_QzF31T5jsg" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:text-blue-300 underline"
+                >
+                  Watch Echo Blvd&#39;s cover of &quot;Shimmer&quot; on YouTube
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Featured Video - Interstate Love Song */}
         <div className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
             Interstate Love Song (Stone Temple Pilots cover)
@@ -52,7 +88,7 @@ export default function MusicPage() {
           </div>
         </div>
         
-        {/* Additional Featured Video */}
+        {/* Additional Featured Video - Times Like These */}
         <div className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">
             Times Like These (Foo Fighters Cover)
@@ -94,24 +130,35 @@ export default function MusicPage() {
             Latest Tracks
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Track Card 1 */}
+            {/* Track Card 1 - Shimmer */}
+            <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
+              <h3 className="text-xl font-semibold text-white mb-2">Shimmer</h3>
+              <p className="text-gray-400 mb-4">Fuel Cover - Latest Release</p>
+              <a 
+                href="https://www.youtube.com/watch?v=_QzF31T5jsg" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors inline-block"
+              >
+                Watch on YouTube
+              </a>
+            </div>
+            
+            {/* Track Card 2 - Interstate Love Song */}
             <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Interstate Love Song</h3>
-              <p className="text-gray-400 mb-4">From our latest album</p>
-              {/* No Spotify button - streaming links coming soon */}
-              <p className="text-gray-500 italic">Streaming links coming soon</p>
+              <p className="text-gray-400 mb-4">Stone Temple Pilots Cover</p>
+              <a 
+                href="https://www.youtube.com/watch?v=Lh-VdQjkhBo" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors inline-block"
+              >
+                Watch on YouTube
+              </a>
             </div>
             
-            {/* Track Card 2 */}
-            <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
-              <h3 className="text-xl font-semibold text-white mb-2">Coming Soon</h3>
-              <p className="text-gray-400 mb-4">New tracks in the works</p>
-              <button className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors" disabled>
-                Coming Soon
-              </button>
-            </div>
-            
-            {/* Track Card 3 */}
+            {/* Track Card 3 - Live Performances */}
             <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Live Performances</h3>
               <p className="text-gray-400 mb-4">Check out our live shows</p>
