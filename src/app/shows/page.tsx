@@ -51,7 +51,7 @@ export default function ShowsPage() {
                 <h2 className="text-white text-xl font-semibold">11/28/2025</h2>
                 <p className="text-gray-300">
                   <a href="https://www.woodysportstavern.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Woody's Sports Tavern and Grill
+                    Woody&#39;s Sports Tavern and Grill
                   </a>
                   , Cary
                 </p>
