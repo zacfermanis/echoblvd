@@ -12,7 +12,7 @@ Creating a modern, responsive website for the band Echo Blvd to showcase their m
 - **Performance**: Fast loading, optimized for music content
 
 ## Technical Goals
-- Next.js 14+ with App Router
+- Next.js 15.4.2 with App Router
 - TypeScript with strict mode
 - Tailwind CSS for styling
 - Server-side rendering for SEO
@@ -37,4 +37,5 @@ Creating a modern, responsive website for the band Echo Blvd to showcase their m
 - Echo Blvd rock band aesthetic and visual identity
 - Powerful, melodic rock music focus
 - Authentic, raw energy in design and content
-- Professional yet approachable tone 
+- Professional yet approachable tone
+

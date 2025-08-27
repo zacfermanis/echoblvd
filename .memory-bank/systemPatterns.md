@@ -265,4 +265,5 @@ const getShows = async (): Promise<Show[]> => {
   // Fetch shows with caching
   return shows;
 };
-``` 
+```
+

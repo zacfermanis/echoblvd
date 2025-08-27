@@ -49,4 +49,5 @@ The Echo Blvd band needs a professional online presence to:
 - **Engagement**: Time on site, pages per visit, return visitors
 - **Conversion**: Newsletter signups, social media follows, show attendance
 - **Performance**: Page load times, mobile usability scores
-- **Discovery**: Search engine rankings, social media shares 
+- **Discovery**: Search engine rankings, social media shares
+
