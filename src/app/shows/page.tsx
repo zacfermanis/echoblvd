@@ -1,11 +1,24 @@
 import type { Metadata } from 'next';
+import { getUpcomingShows } from '@/app/lib/content';
 
 export const metadata: Metadata = {
   title: 'Shows - Echo Blvd',
   description: 'See Echo Blvd live in concert. Find upcoming tour dates and ticket information.',
 };
 
-export default function ShowsPage() {
+export default async function ShowsPage() {
+  const shows = await getUpcomingShows();
+
+  function formatTime12h(time: string): string {
+    // expects 'HH:MM'
+    const [h, m] = time.split(':').map(Number);
+    if (Number.isNaN(h) || Number.isNaN(m)) return time;
+    const hour12 = ((h + 11) % 12) + 1;
+    const suffix = h >= 12 ? 'PM' : 'AM';
+    const minutes = m.toString().padStart(2, '0');
+    return `${hour12}:${minutes} ${suffix}`;
+  }
+
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -15,78 +28,36 @@ export default function ShowsPage() {
         <p className="text-xl text-gray-300 mb-12">
           Catch us live on tour
         </p>
-        <div className="bg-gray-800 rounded-lg divide-y divide-gray-700">
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h2 className="text-white text-xl font-semibold">11/28/2025</h2>
-                <p className="text-gray-300">
-                  <a href="https://www.woodysportstavern.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Woody&#39;s Sports Tavern and Grill
-                  </a>
-                  , Cary
-                </p>
-              </div>
-              <div className="text-gray-300">9:30 PM – 12:30 AM</div>
-            </div>
+        {shows.length === 0 ? (
+          <div className="bg-gray-800 rounded-lg p-8 text-gray-300">
+            No upcoming shows yet. Check back soon!
           </div>
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h2 className="text-white text-xl font-semibold">12/20/2025</h2>
-                <p className="text-gray-300">
-                  <a href="https://www.tapyardraleigh.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Tap Yard
-                  </a>
-                  , Raleigh
-                </p>
+        ) : (
+          <div className="bg-gray-800 rounded-lg divide-y divide-gray-700">
+            {shows.map(show => (
+              <div key={show.id} className="p-6 sm:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <div>
+                    <h2 className="text-white text-xl font-semibold">
+                      {new Date(show.date).toLocaleDateString('en-US')}
+                    </h2>
+                    <p className="text-gray-300">
+                      <span>{show.venue}</span>
+                      {`, ${show.city}`}
+                    </p>
+                  </div>
+                  <div className="text-gray-300">
+                    {show.startTime
+                      ? `${formatTime12h(show.startTime)}${
+                          show.endTime ? ` – ${formatTime12h(show.endTime)}` : ''
+                        }`
+                      : show.description ?? ''}
+                  </div>
+                </div>
               </div>
-              <div className="text-gray-300">8:00 PM – 11:00 PM</div>
-            </div>
+            ))}
           </div>
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h2 className="text-white text-xl font-semibold">3/14/2026</h2>
-                <p className="text-gray-300">
-                  <a href="https://www.aviatorbrew.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Aviator Brew Co. - Hangar Bar
-                  </a>
-                  , Fuquay-Varina
-                </p>
-              </div>
-              <div className="text-gray-300">8:00 PM – 11:00 PM</div>
-            </div>
-          </div>
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h2 className="text-white text-xl font-semibold">5/22/2026</h2>
-                <p className="text-gray-300">
-                  <a href="https://www.aviatorbrew.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Aviator Brew Co. - Pizzeria
-                  </a>
-                  , Fuquay-Varina
-                </p>
-              </div>
-              <div className="text-gray-300">8:00 PM – 11:00 PM</div>
-            </div>
-          </div>
-          <div className="p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h2 className="text-white text-xl font-semibold">8/29/2026</h2>
-                <p className="text-gray-300">
-                  <a href="https://www.aviatorbrew.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                    Aviator Brew Co. - Grungefest
-                  </a>
-                  , Fuquay-Varina
-                </p>
-              </div>
-              <div className="text-gray-300">TBD</div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

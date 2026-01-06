@@ -51,10 +51,11 @@ const getBandContent = async (): Promise<BandContent> => {
 
 #### Dynamic Content
 ```typescript
-// External APIs for shows, social media
-// Cached and revalidated periodically
+// Supabase-backed content editable via Admin UI
+// Read from public.shows using server-side Supabase client
+// Admin APIs use service role key for writes (bypass RLS)
 const getUpcomingShows = async (): Promise<Show[]> => {
-  // Fetch from external API with caching
+  // Filter/sort upcoming shows
   return shows;
 };
 ```
@@ -120,7 +121,7 @@ const fetchShows = async (): Promise<Result<Show[], FetchError>> => {
 
 ### Content Management
 1. **Static Content**: Markdown files for band bio, about pages
-2. **Dynamic Content**: JSON files for shows, music, social links
+2. **Dynamic Content**: Supabase tables for shows (admin-editable), JSON for music (for now)
 3. **Media Assets**: Optimized images in public directory
 4. **SEO Content**: Meta tags, structured data for each page
 

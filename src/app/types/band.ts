@@ -49,10 +49,10 @@ export type Show = {
   venue: string;
   city: string;
   country: string;
-  ticketLink?: string;
-  isSoldOut?: boolean;
   isUpcoming: boolean;
   description?: string;
+  startTime?: string; // 'HH:MM' in UI; DB may store 'HH:MM:SS'
+  endTime?: string;   // 'HH:MM' in UI; DB may store 'HH:MM:SS'
 };
 
 // Contact information

@@ -112,6 +112,14 @@ echoblvd/
 - **Development**: Local environment setup
 - **Production**: Secure environment configuration
 - **Analytics**: Google Analytics, social media tracking
+- **Admin**: `ADMIN_PASSWORD` used to protect `/admin` and sign auth cookie
+- **Supabase**:
+  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (safe for public reads)
+  - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only)
+
+### Persistence Notes
+- Shows content persists in Supabase `public.shows`. Server uses service role for writes.
+- For other content (music), still file-based; can migrate later.
 
 ### Monitoring
 - **Performance**: Core Web Vitals monitoring

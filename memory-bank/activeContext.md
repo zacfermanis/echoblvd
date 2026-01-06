@@ -15,7 +15,7 @@
 
 **Phase 3: Content Implementation - IN PROGRESS**
 - ✅ Music showcase page (with YouTube video embed)
-- 🔄 Shows/tour dates page
+- 🔄 Shows/tour dates page (now driven by Supabase)
 - 🔄 About band page
 - ✅ Contact page with form
 
@@ -56,10 +56,14 @@
 - ✅ **REORDERED: Music page videos to show most recent first (Shimmer → Interstate Love Song → Times Like These)**
 - ✅ **UPDATED: Latest tracks section to feature Shimmer as first track and removed "Coming Soon" tile**
 - ✅ **REPLACED: "Streaming links coming soon" with actual YouTube links in track cards**
+- ✅ **ADDED: Admin dashboard at `/admin` protected by `ADMIN_PASSWORD`**
+- ✅ **IMPLEMENTED: Admin login/logout API with signed, HTTP-only cookie**
+- ✅ **MIGRATED: Shows CRUD/API to Supabase (`public.shows`)**
+- ✅ **UPDATED: Shows page to load from Supabase via `getUpcomingShows`**
 
 ## Next Steps
 1. **Phase 3: Complete Content Implementation**
-   - Implement shows page with upcoming tour dates
+   - Expand shows styling (sold out badges, past shows archive)
    - Build about page with band member information
    - ✅ Contact page with form functionality (COMPLETED)
 
@@ -96,7 +100,7 @@
 
 ### Content Strategy
 - **Static content**: Markdown files for band information
-- **Dynamic data**: JSON files for shows, music, social links
+- **Dynamic data**: Supabase tables for shows (admin-editable), JSON for music (for now)
 - **SEO optimization**: Meta tags, structured data, sitemap
 - **Image optimization**: WebP format, lazy loading
 - **Video content**: YouTube embeds for better performance and reliability
@@ -147,12 +151,11 @@
 
 ## Current Status
 - **Phase**: Content implementation (Phase 3)
-- **Progress**: Music page complete with two YouTube covers (Stone Temple Pilots and Foo Fighters), no Spotify or streaming links, Turbopack config migration complete, Contact page fully implemented with email functionality
-- **Next milestone**: Shows page implementation
+- **Progress**: Music page complete, Contact page complete, Admin dashboard added for shows management
+- **Next milestone**: About page, refine shows UX, persistence strategy for production
 - **Blockers**: None currently identified
 
 ## Immediate Actions Required
-1. Implement shows page with tour dates
-2. Create about page with band information
-3. ✅ Contact page with form functionality (COMPLETED)
-4. Add more interactive features 
+1. Create about page with band information
+2. Style shows list; add past shows archive
+3. Consider migrating additional content (music) into Supabase

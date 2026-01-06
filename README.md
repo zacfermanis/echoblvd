@@ -20,6 +20,35 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Admin Dashboard
+
+- Route: `/admin`
+- Protection: Password via environment variable `ADMIN_PASSWORD`
+- First feature: Manage Shows (add, update, delete). Data is stored in Supabase `shows` table.
+
+### Setup
+
+1. Create a `.env.local` in the project root:
+
+```bash
+ADMIN_PASSWORD=your-strong-password
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project-ref>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+SUPABASE_URL=https://<your-project-ref>.supabase.co
+SUPABASE_ANON_KEY=<your-anon-key>
+SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key> # server-only
+```
+
+2. Restart the dev server.
+3. Visit `/admin` and sign in.
+
+### Supabase Schema & RLS
+
+Run the SQL in `supabase/shows.sql` in your Supabase SQL editor to create the `shows` table, indexes, and Row Level Security (RLS) policies.
+
+- Public read is allowed (SELECT for `anon` and `authenticated` roles)
+- Inserts/updates/deletes are restricted; the server uses `SUPABASE_SERVICE_ROLE_KEY` for admin writes
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
