@@ -30,7 +30,7 @@ export default function AboutPage() {
           </div>
           <div className="bg-gray-800 rounded-lg p-8">
             <p className="text-gray-200 leading-relaxed text-lg">
-              Echo Blvd is a Raleigh/Durham rock band with classic swagger and alt-rock grit. Boston’s Zac Fermanis fronts local vets Tom Kuhn, Jeremy Buenviaje, Joe Waddel, and Scott Little. From club to party, they bring tight grooves, raw vocals, and serious energy.
+              Echo Blvd is a Raleigh/Durham rock band with classic swagger and alt-rock grit. Boston’s Zac Fermanis fronts local vets Tom Kuhn, Jeremy Buenviaje, and Scott Little. From club to party, they bring tight grooves, raw vocals, and serious energy.
             </p>
           </div>
         </div>
