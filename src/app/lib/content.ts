@@ -54,7 +54,7 @@ export async function getMusic(): Promise<{ tracks: Track[]; albums: Album[] }> 
       tracks: JSON.parse(tracksContents) as Track[],
       albums: JSON.parse(albumsContents) as Album[]
     };
-  } catch (error) {
+  } catch {
     return { tracks: [], albums: [] };
   }
 }

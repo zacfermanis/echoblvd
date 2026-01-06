@@ -49,6 +49,7 @@ export default function RootLayout({
         <main className="pt-16">
           {children}
         </main>
+        <Analytics />
       </body>
     </html>
   );

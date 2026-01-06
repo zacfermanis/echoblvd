@@ -13,11 +13,10 @@ type ManagerMode = 'table' | 'edit';
 
 function emptyShow(): EditableShow {
 	const localId =
-		(typeof crypto !== 'undefined' &&
-			// @ts-ignore - browser crypto
-			typeof crypto.randomUUID === 'function' &&
-			// @ts-ignore
-			crypto.randomUUID()) ||
+		(typeof globalThis !== 'undefined' &&
+			'crypto' in globalThis &&
+			typeof (globalThis as unknown as { crypto?: { randomUUID?: () => string } }).crypto?.randomUUID === 'function' &&
+			(globalThis as unknown as { crypto: { randomUUID: () => string } }).crypto.randomUUID()) ||
 		`new-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 	return {
 		id: '',
@@ -75,11 +74,7 @@ export function ShowsManager() {
 		};
 	}, []);
 
-	function updateField(localId: string, field: keyof EditableShow, value: unknown) {
-		setShows(prev =>
-			prev.map(s => (s._localId === localId ? { ...s, [field]: value, _isDirty: true } : s))
-		);
-	}
+	// inline editing was removed; updates handled via `editing` state
 
 	async function saveShow(show: EditableShow) {
 		setError(null);

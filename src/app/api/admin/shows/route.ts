@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { assertAuthenticated } from '@/app/lib/admin-auth';
 import { getSupabaseServiceClient } from '@/app/lib/supabase';
 import type { Show } from '@/app/types/band';
-import crypto from 'crypto';
 
 export const runtime = 'nodejs';
 
