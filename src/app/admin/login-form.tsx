@@ -25,7 +25,11 @@ export function LoginForm({ onLoggedIn }: LoginFormProps) {
 				const data = await res.json().catch(() => ({}));
 				throw new Error(data.error ?? 'Login failed');
 			}
-			onLoggedIn ? onLoggedIn() : window.location.reload();
+			if (onLoggedIn) {
+				onLoggedIn();
+			} else {
+				window.location.reload();
+			}
 		} catch (err) {
 			setError((err as Error).message);
 		} finally {

@@ -35,10 +35,10 @@ export function ContactForm() {
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error("Failed to send message.");
-      const data = await res.json();
+      await res.json();
       setSuccess(true);
       setForm({ name: "", email: "", message: "" });
-    } catch (err) {
+    } catch {
       setError("There was an error sending your message. Please try again later.");
     } finally {
       setIsSubmitting(false);
