@@ -60,6 +60,7 @@
 - ✅ **IMPLEMENTED: Admin login/logout API with signed, HTTP-only cookie**
 - ✅ **MIGRATED: Shows CRUD/API to Supabase (`public.shows`)**
 - ✅ **UPDATED: Shows page to load from Supabase via `getUpcomingShows`**
+- ✅ **ADDED: Keep-alive API route with optional token gate and Vercel daily cron**
 
 ## Next Steps
 1. **Phase 3: Complete Content Implementation**
