@@ -17,6 +17,7 @@ describe('Navigation', () => {
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Music')).toBeInTheDocument();
     expect(screen.getByText('Shows')).toBeInTheDocument();
+    expect(screen.getByText('Social')).toBeInTheDocument();
     expect(screen.getByText('About')).toBeInTheDocument();
     expect(screen.getByText('Contact')).toBeInTheDocument();
   });

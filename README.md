@@ -49,6 +49,28 @@ Run the SQL in `supabase/shows.sql` in your Supabase SQL editor to create the `s
 - Public read is allowed (SELECT for `anon` and `authenticated` roles)
 - Inserts/updates/deletes are restricted; the server uses `SUPABASE_SERVICE_ROLE_KEY` for admin writes
 
+## Instagram Feed
+
+- Route: `/social`
+- Source: Instagram Graph API (server-side fetch + caching)
+
+### Setup
+
+1. Convert the Instagram account to a Business or Creator account.
+2. Connect the Instagram account to a Facebook Page.
+3. Create a Meta app and add the Instagram Graph API product.
+4. Generate a long-lived access token with permissions: `instagram_basic`, `pages_show_list`, `pages_read_engagement`, `instagram_manage_insights`.
+5. Find the Instagram User ID:
+   - `GET /me/accounts` to list pages
+   - `GET /{page-id}?fields=instagram_business_account`
+   - Use the returned `instagram_business_account.id`
+6. Add the credentials to `.env.local`:
+
+```bash
+INSTAGRAM_ACCESS_TOKEN=your-long-lived-token
+INSTAGRAM_USER_ID=your-instagram-user-id
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
