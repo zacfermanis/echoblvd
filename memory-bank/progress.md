@@ -6,6 +6,7 @@
 - **Development Standards**: TDD workflow and code quality standards established
 - **Core Structure**: Navigation, routing, and responsive design foundation
 - **Music Page**: Complete with YouTube video embed, track cards, and social media section
+- **Supabase Keep-Alive**: Daily cron hits `/api/keep-alive` to keep hobby project active
 
 ## What's Left to Build
 

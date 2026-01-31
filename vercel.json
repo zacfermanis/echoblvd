@@ -19,5 +19,11 @@
       "source": "/(.*)\\.svg",
       "destination": "/$1.svg"
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "0 9 * * *"
+    }
   ]
 } 
