@@ -20,8 +20,12 @@ describe('getInstagramFeed', () => {
     delete process.env.INSTAGRAM_ACCESS_TOKEN;
     delete process.env.INSTAGRAM_USER_ID;
 
-    const fetchMock = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn();
+    Object.defineProperty(globalThis, 'fetch', {
+      value: fetchMock,
+      writable: true,
+      configurable: true,
+    });
 
     const result = await getInstagramFeed();
 
@@ -33,8 +37,12 @@ describe('getInstagramFeed', () => {
     process.env.INSTAGRAM_ACCESS_TOKEN = 'test-token';
     process.env.INSTAGRAM_USER_ID = 'user-123';
 
-    const fetchMock = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn();
+    Object.defineProperty(globalThis, 'fetch', {
+      value: fetchMock,
+      writable: true,
+      configurable: true,
+    });
 
     const apiResponse = {
       data: [
@@ -60,9 +68,11 @@ describe('getInstagramFeed', () => {
       ],
     };
 
-    fetchMock.mockResolvedValue(
-      new Response(JSON.stringify(apiResponse), { status: 200 })
-    );
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => apiResponse,
+    });
 
     const result = await getInstagramFeed({ limit: 2 });
 
@@ -101,10 +111,18 @@ describe('getInstagramFeed', () => {
     process.env.INSTAGRAM_ACCESS_TOKEN = 'test-token';
     process.env.INSTAGRAM_USER_ID = 'user-123';
 
-    const fetchMock = jest.fn<Promise<Response>, Parameters<typeof fetch>>();
-    global.fetch = fetchMock;
+    const fetchMock = jest.fn();
+    Object.defineProperty(globalThis, 'fetch', {
+      value: fetchMock,
+      writable: true,
+      configurable: true,
+    });
 
-    fetchMock.mockResolvedValue(new Response('Server error', { status: 500 }));
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => 'Server error',
+    });
 
     const result = await getInstagramFeed();
 
