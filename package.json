@@ -15,7 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "@vercel/analytics": "^1.6.1",
-    "next": "15.4.2",
+    "next": "15.4.8",
     "nodemailer": "^6.10.1",
     "react": "19.1.0",
     "react-dom": "19.1.0"
@@ -33,7 +33,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.4.2",
+    "eslint-config-next": "15.4.8",
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
     "tailwindcss": "^4",
