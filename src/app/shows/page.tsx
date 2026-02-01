@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: 'See Echo Blvd live in concert. Find upcoming tour dates and ticket information.',
 };
 
+export const revalidate = 0;
+
 export default async function ShowsPage() {
   const shows = await getUpcomingShows();
 
