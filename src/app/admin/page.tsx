@@ -1,12 +1,27 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { isAuthenticatedFromCookies } from '@/app/lib/admin-auth';
 import { LoginForm } from './login-form';
-import { ShowsManager } from './shows-manager';
 
 export const metadata: Metadata = {
 	title: 'Admin - Echo Blvd',
 	description: 'Admin dashboard for managing site content',
 };
+
+const dashboardItems = [
+	{
+		href: '/admin/shows',
+		label: 'Manage Shows',
+		description: 'Add, edit, or remove upcoming and past shows.',
+		icon: '🎸',
+	},
+	{
+		href: '/admin/set-list',
+		label: 'Set List',
+		description: 'Manage the active set list with song and gear notes.',
+		icon: '🎵',
+	},
+];
 
 export default async function AdminPage() {
 	const isAuthed = await isAuthenticatedFromCookies();
@@ -40,8 +55,20 @@ export default async function AdminPage() {
 								</button>
 							</form>
 						</div>
-						<div className="rounded-lg border border-gray-700 bg-gray-800 p-6">
-							<ShowsManager />
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							{dashboardItems.map(item => (
+								<Link
+									key={item.href}
+									href={item.href}
+									className="group flex flex-col gap-2 rounded-lg border border-gray-700 bg-gray-800 p-6 hover:border-indigo-500 hover:bg-gray-800/80 transition-colors"
+								>
+									<span className="text-3xl">{item.icon}</span>
+									<span className="text-lg font-semibold text-white group-hover:text-indigo-400 transition-colors">
+										{item.label}
+									</span>
+									<span className="text-sm text-gray-400">{item.description}</span>
+								</Link>
+							))}
 						</div>
 					</div>
 				)}
