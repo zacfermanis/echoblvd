@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { isAuthenticatedFromCookies } from '@/app/lib/admin-auth';
 import { LoginForm } from './login-form';
+import { LogoutButton } from './logout-button';
 
 export const metadata: Metadata = {
 	title: 'Admin - Echo Blvd',
@@ -48,18 +49,7 @@ export default async function AdminPage() {
 					<div className="space-y-8">
 						<div className="flex items-center justify-between">
 							<h2 className="text-xl font-semibold text-white">Dashboard</h2>
-							<form
-								action="/api/admin/logout"
-								method="post"
-								className="inline-block"
-							>
-								<button
-									type="submit"
-									className="rounded-md border border-gray-600 text-gray-200 hover:bg-gray-700 px-3 py-2"
-								>
-									Log out
-								</button>
-							</form>
+						<LogoutButton />
 						</div>
 						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{dashboardItems.map(item => (
