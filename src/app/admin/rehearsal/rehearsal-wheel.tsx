@@ -45,6 +45,36 @@ function getWinnerIndex(rotation: number, count: number): number {
 	return Math.floor(normalised / segAngle) % count;
 }
 
+const STORAGE_KEY = 'echoblvd_rehearsal';
+
+interface PersistedState {
+	removedIds: string[];
+	selectedId: string | null;
+	rotation: number;
+}
+
+function loadPersistedState(): PersistedState | null {
+	try {
+		const raw = localStorage.getItem(STORAGE_KEY);
+		if (!raw) return null;
+		return JSON.parse(raw) as PersistedState;
+	} catch {
+		return null;
+	}
+}
+
+function persistState(state: PersistedState) {
+	try {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+	} catch { /* noop */ }
+}
+
+export function clearRehearsalState() {
+	try {
+		localStorage.removeItem(STORAGE_KEY);
+	} catch { /* noop */ }
+}
+
 const fieldLabel: Record<string, string> = {
 	zacTuning: 'Tuning',
 	zacPedal: 'Pedal',
@@ -73,6 +103,21 @@ export function RehearsalWheel({ songs: initialSongs }: Props) {
 	useEffect(() => {
 		remainingRef.current = remaining;
 	}, [remaining]);
+
+	// Restore persisted state on mount
+	useEffect(() => {
+		const stored = loadPersistedState();
+		if (!stored) return;
+		const removedSet = new Set(stored.removedIds);
+		const restoredRemaining = initialSongs.filter(s => !removedSet.has(s.id));
+		const restoredSelected = stored.selectedId
+			? (initialSongs.find(s => s.id === stored.selectedId) ?? null)
+			: null;
+		rotationRef.current = stored.rotation;
+		remainingRef.current = restoredRemaining;
+		setRemaining(restoredRemaining);
+		setSelected(restoredSelected);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 	const drawWheel = useCallback((rot: number, songs: SetListEntry[]) => {
 		const canvas = canvasRef.current;
@@ -204,8 +249,16 @@ export function RehearsalWheel({ songs: initialSongs }: Props) {
 				const songs = remainingRef.current;
 				const winnerIdx = getWinnerIndex(rotationRef.current, songs.length);
 				const winner = songs[winnerIdx];
+				const newRemaining = songs.filter(s => s.id !== winner.id);
+				persistState({
+					removedIds: initialSongs
+						.filter(s => !newRemaining.some(r => r.id === s.id))
+						.map(s => s.id),
+					selectedId: winner.id,
+					rotation: rotationRef.current,
+				});
 				setSelected(winner);
-				setRemaining(prev => prev.filter(s => s.id !== winner.id));
+				setRemaining(newRemaining);
 				setSpinning(false);
 			}
 		}
@@ -218,6 +271,7 @@ export function RehearsalWheel({ songs: initialSongs }: Props) {
 			cancelAnimationFrame(animRef.current);
 			animRef.current = null;
 		}
+		clearRehearsalState();
 		rotationRef.current = 0;
 		remainingRef.current = initialSongs;
 		setRemaining(initialSongs);
