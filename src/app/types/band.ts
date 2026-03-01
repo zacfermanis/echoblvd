@@ -55,6 +55,22 @@ export type Show = {
   endTime?: string;   // 'HH:MM' in UI; DB may store 'HH:MM:SS'
 };
 
+// Set list entry
+export interface SetListEntry {
+  id: string;
+  song: string;
+  artist: string;
+  length?: string;
+  zacTuning?: string;
+  zacPedal?: string;
+  zacGuitar?: string;
+  zacKeys?: string;
+  tomTuning?: string;
+  tomGuitar?: string;
+  jeremyTuning?: string;
+  jeremyGuitar?: string;
+}
+
 // Contact information
 export type ContactInfo = {
   email: string;
