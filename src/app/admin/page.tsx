@@ -21,6 +21,12 @@ const dashboardItems = [
 		description: 'Manage the active set list with song and gear notes.',
 		icon: '🎵',
 	},
+	{
+		href: '/admin/rehearsal',
+		label: 'Rehearsal',
+		description: 'Spin the wheel to randomly pick the next song to rehearse.',
+		icon: '🎡',
+	},
 ];
 
 export default async function AdminPage() {
