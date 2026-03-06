@@ -79,6 +79,7 @@ export interface PracticeSong {
 	artist: string;
 	createdAt: string;
 	tracks: PracticeSongTrack[];
+	disabledTracks: string[];
 }
 
 export interface PracticeSongTrack {
