@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 	description: 'Multi-track stem player for band practice',
 };
 
-type SongRow = { id: string; title: string; artist: string; created_at: string };
+type SongRow = { id: string; title: string; artist: string; created_at: string; disabled_tracks: string[] };
 type TrackRow = { id: string; song_id: string; track_key: string; storage_path: string };
 
 export default async function PracticePage() {
@@ -22,7 +22,7 @@ export default async function PracticePage() {
 
 	const { data: songs } = await supabase
 		.from('practice_songs')
-		.select('id, title, artist, created_at')
+		.select('id, title, artist, created_at, disabled_tracks')
 		.order('title', { ascending: true });
 
 	const { data: tracks } = await supabase
@@ -44,6 +44,7 @@ export default async function PracticePage() {
 			title: r.title,
 			artist: r.artist,
 			createdAt: r.created_at,
+			disabledTracks: r.disabled_tracks ?? [],
 			tracks: (tracksBySong.get(r.id) ?? []).map(
 				(t): PracticeSongTrack => ({
 					id: t.id,

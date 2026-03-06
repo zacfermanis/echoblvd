@@ -117,7 +117,7 @@ export function PracticeManager({ initialSongs }: Props) {
 								<p className="text-gray-400 text-sm mt-0.5">{song.artist}</p>
 							</div>
 
-							<TrackStatusBar tracks={song.tracks} />
+							<TrackStatusBar tracks={song.tracks} disabledTracks={song.disabledTracks ?? []} />
 
 							<button
 								type="button"
@@ -142,18 +142,72 @@ export function PracticeManager({ initialSongs }: Props) {
 	);
 }
 
-function TrackStatusBar({ tracks }: { tracks: PracticeSongTrack[] }) {
+// ─────────────────────────────────────────────────────────────
+// ConfirmDialog — modal replacement for window.confirm()
+// ─────────────────────────────────────────────────────────────
+
+interface ConfirmDialogProps {
+	title: string;
+	message: string;
+	confirmLabel?: string;
+	onConfirm: () => void;
+	onCancel: () => void;
+}
+
+function ConfirmDialog({
+	title,
+	message,
+	confirmLabel = 'Delete',
+	onConfirm,
+	onCancel,
+}: ConfirmDialogProps) {
+	return (
+		<div
+			className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+			onClick={onCancel}
+		>
+			<div
+				className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 space-y-4"
+				onClick={(e) => e.stopPropagation()}
+			>
+				<h3 className="text-white font-semibold text-lg">{title}</h3>
+				<p className="text-gray-400 text-sm leading-relaxed">{message}</p>
+				<div className="flex gap-3 justify-end pt-1">
+					<button
+						type="button"
+						onClick={onCancel}
+						className="px-4 py-2 text-sm rounded-md border border-gray-600 text-gray-300 hover:bg-gray-700 transition-colors"
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						onClick={onConfirm}
+						className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-500 text-white font-medium transition-colors"
+					>
+						{confirmLabel}
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function TrackStatusBar({ tracks, disabledTracks }: { tracks: PracticeSongTrack[]; disabledTracks: string[] }) {
 	const uploadedKeys = new Set(tracks.map((t) => t.trackKey));
-	const total = PRACTICE_TRACK_DEFS.length;
+	// Only count tracks that are not hidden (disabled + not yet uploaded)
+	const activeTotal = PRACTICE_TRACK_DEFS.filter(
+		(t) => !disabledTracks.includes(t.key) || uploadedKeys.has(t.key),
+	).length;
 	const uploaded = uploadedKeys.size;
-	const pct = Math.round((uploaded / total) * 100);
+	const pct = activeTotal > 0 ? Math.round((uploaded / activeTotal) * 100) : 0;
 
 	return (
 		<div className="space-y-1">
 			<div className="flex justify-between text-xs text-gray-500">
 				<span>Tracks</span>
 				<span>
-					{uploaded}/{total}
+					{uploaded}/{activeTotal}
 				</span>
 			</div>
 			<div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
@@ -183,6 +237,7 @@ function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
 	const [newArtist, setNewArtist] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toast, setToast] = useState<Toast | null>(null);
+	const [deleteConfirm, setDeleteConfirm] = useState<PracticeSong | null>(null);
 
 	function showToast(message: string, type: Toast['type'] = 'success') {
 		setToast({ message, type });
@@ -214,8 +269,8 @@ function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
 		}
 	}
 
-	async function handleDeleteSong(song: PracticeSong) {
-		if (!confirm(`Delete "${song.title}" and all its uploaded tracks?`)) return;
+	async function doDeleteSong(song: PracticeSong) {
+		setDeleteConfirm(null);
 		const res = await fetch(`/api/admin/practice/songs?id=${song.id}`, { method: 'DELETE' });
 		if (res.ok) {
 			setSongs((prev) => prev.filter((s) => s.id !== song.id));
@@ -236,6 +291,17 @@ function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
 				>
 					{toast.message}
 				</div>
+			)}
+
+			{/* Song delete confirmation */}
+			{deleteConfirm && (
+				<ConfirmDialog
+					title={`Delete "${deleteConfirm.title}"?`}
+					message={`This will permanently delete the song and all ${deleteConfirm.tracks.length > 0 ? `${deleteConfirm.tracks.length} uploaded stem${deleteConfirm.tracks.length !== 1 ? 's' : ''}` : 'its data'}. This cannot be undone.`}
+					confirmLabel="Delete Song"
+					onConfirm={() => void doDeleteSong(deleteConfirm)}
+					onCancel={() => setDeleteConfirm(null)}
+				/>
 			)}
 
 			{/* Header */}
@@ -330,7 +396,7 @@ function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
 							onToggle={() =>
 								setExpandedId((prev) => (prev === song.id ? null : song.id))
 							}
-							onDelete={() => handleDeleteSong(song)}
+							onDelete={() => setDeleteConfirm(song)}
 							onTrackChange={(updated) => {
 								setSongs((prev) =>
 									prev.map((s) => (s.id === updated.id ? updated : s)),
@@ -368,6 +434,41 @@ function SongTrackManager({
 }: SongTrackManagerProps) {
 	const uploadedKeys = new Map(song.tracks.map((t) => [t.trackKey, t]));
 	const uploadedCount = uploadedKeys.size;
+	const [showHidden, setShowHidden] = useState(false);
+
+	// disabled = in DB disabledTracks AND not yet uploaded (uploaded always shows)
+	const disabledSet = new Set(song.disabledTracks ?? []);
+	const hiddenCount = [...disabledSet].filter((k) => !uploadedKeys.has(k)).length;
+
+	const visibleDefs = PRACTICE_TRACK_DEFS.filter((t) => {
+		const isDisabled = disabledSet.has(t.key) && !uploadedKeys.has(t.key);
+		return !isDisabled || showHidden;
+	});
+
+	async function persistDisabled(newDisabled: string[]) {
+		try {
+			const res = await fetch(`/api/admin/practice/songs?id=${song.id}`, {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ disabledTracks: newDisabled }),
+			});
+			if (!res.ok) throw new Error('Failed');
+		} catch {
+			showToast('Failed to update track visibility', 'error');
+		}
+	}
+
+	function hideTrack(trackKey: string) {
+		const newDisabled = [...new Set([...(song.disabledTracks ?? []), trackKey])];
+		onTrackChange({ ...song, disabledTracks: newDisabled });
+		void persistDisabled(newDisabled);
+	}
+
+	function restoreTrack(trackKey: string) {
+		const newDisabled = (song.disabledTracks ?? []).filter((k) => k !== trackKey);
+		onTrackChange({ ...song, disabledTracks: newDisabled });
+		void persistDisabled(newDisabled);
+	}
 
 	return (
 		<div className="rounded-lg border border-gray-700 bg-gray-800 overflow-hidden">
@@ -390,7 +491,7 @@ function SongTrackManager({
 						<span className="ml-2 text-gray-400 text-sm">{song.artist}</span>
 					</div>
 					<span className="ml-auto text-xs text-gray-500">
-						{uploadedCount}/{PRACTICE_TRACK_DEFS.length} tracks
+						{uploadedCount}/{PRACTICE_TRACK_DEFS.length - hiddenCount} tracks
 					</span>
 				</button>
 				<button
@@ -405,8 +506,9 @@ function SongTrackManager({
 			{/* Track upload slots */}
 			{isExpanded && (
 				<div className="border-t border-gray-700 divide-y divide-gray-700/60">
-					{PRACTICE_TRACK_DEFS.map((trackDef) => {
+					{visibleDefs.map((trackDef) => {
 						const existing = uploadedKeys.get(trackDef.key);
+						const isHiddenSlot = disabledSet.has(trackDef.key) && !existing;
 						return (
 							<TrackUploadSlot
 								key={trackDef.key}
@@ -414,11 +516,30 @@ function SongTrackManager({
 								trackKey={trackDef.key}
 								trackLabel={trackDef.label}
 								existing={existing}
+								isHiddenSlot={isHiddenSlot}
+								onHide={() => hideTrack(trackDef.key)}
+								onRestore={() => restoreTrack(trackDef.key)}
 								onTrackChange={onTrackChange}
 								showToast={showToast}
 							/>
 						);
 					})}
+
+					{/* Hidden tracks footer */}
+					{hiddenCount > 0 && (
+						<div className="px-6 py-2.5 flex items-center justify-between bg-gray-900/30">
+							<span className="text-xs text-gray-600">
+								{hiddenCount} track{hiddenCount !== 1 ? 's' : ''} hidden
+							</span>
+							<button
+								type="button"
+								onClick={() => setShowHidden((v) => !v)}
+								className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+							>
+								{showHidden ? 'Hide them' : 'Show hidden'}
+							</button>
+						</div>
+					)}
 				</div>
 			)}
 		</div>
@@ -434,6 +555,9 @@ interface TrackUploadSlotProps {
 	trackKey: string;
 	trackLabel: string;
 	existing: PracticeSongTrack | undefined;
+	isHiddenSlot: boolean;
+	onHide: () => void;
+	onRestore: () => void;
 	onTrackChange: (updated: PracticeSong) => void;
 	showToast: (msg: string, type?: Toast['type']) => void;
 }
@@ -464,12 +588,16 @@ function TrackUploadSlot({
 	trackKey,
 	trackLabel,
 	existing,
+	isHiddenSlot,
+	onHide,
+	onRestore,
 	onTrackChange,
 	showToast,
 }: TrackUploadSlotProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
 	async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
@@ -523,9 +651,9 @@ function TrackUploadSlot({
 		}
 	}
 
-	async function handleDelete() {
+	async function doRemoveTrack() {
 		if (!existing) return;
-		if (!confirm(`Remove ${trackLabel}? The file will be deleted.`)) return;
+		setShowRemoveConfirm(false);
 		setIsDeleting(true);
 		try {
 			const res = await fetch(`/api/admin/practice/tracks?id=${existing.id}`, {
@@ -543,6 +671,24 @@ function TrackUploadSlot({
 	}
 
 	const isUploading = uploadProgress !== null;
+
+	// Hidden (but visible via "Show hidden") — dimmed row with only a Restore button
+	if (isHiddenSlot) {
+		return (
+			<div className="px-6 py-3 flex items-center gap-4 opacity-40">
+				<span className="text-sm text-gray-400 w-40 shrink-0 italic">{trackLabel}</span>
+				<span className="flex-1 text-xs text-gray-600 italic">hidden</span>
+				<button
+					type="button"
+					title="Restore this track slot"
+					onClick={onRestore}
+					className="text-xs px-3 py-1.5 rounded border border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white transition-colors shrink-0"
+				>
+					Restore
+				</button>
+			</div>
+		);
+	}
 
 	return (
 		<div className="px-6 py-3 flex items-center gap-4">
@@ -579,6 +725,7 @@ function TrackUploadSlot({
 							ref={fileInputRef}
 							type="file"
 							accept="audio/*"
+							aria-label={`Upload ${trackLabel}`}
 							className="hidden"
 							onChange={handleFileChange}
 						/>
@@ -589,19 +736,38 @@ function TrackUploadSlot({
 						>
 							{existing ? 'Replace' : 'Upload'}
 						</button>
-						{existing && (
+						{existing ? (
 							<button
 								type="button"
-								onClick={handleDelete}
+								onClick={() => setShowRemoveConfirm(true)}
 								disabled={isDeleting}
 								className="text-xs px-2 py-1.5 rounded border border-transparent text-red-500 hover:border-red-800 hover:text-red-400 transition-colors disabled:opacity-50"
 							>
 								{isDeleting ? '…' : 'Remove'}
 							</button>
+						) : (
+							<button
+								type="button"
+								title="Hide this track slot — it won't show for this song"
+								onClick={onHide}
+								className="text-xs px-2 py-1.5 rounded border border-transparent text-gray-600 hover:border-gray-700 hover:text-gray-400 transition-colors"
+							>
+								✕
+							</button>
 						)}
 					</>
 				)}
 			</div>
+
+			{showRemoveConfirm && (
+				<ConfirmDialog
+					title={`Remove ${trackLabel}?`}
+					message="The uploaded file will be permanently deleted from storage. You can re-upload it later."
+					confirmLabel="Remove"
+					onConfirm={() => void doRemoveTrack()}
+					onCancel={() => setShowRemoveConfirm(false)}
+				/>
+			)}
 		</div>
 	);
 }

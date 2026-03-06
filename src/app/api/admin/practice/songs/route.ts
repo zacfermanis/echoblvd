@@ -12,6 +12,7 @@ type SongRow = {
 	title: string;
 	artist: string;
 	created_at: string;
+	disabled_tracks: string[];
 };
 
 type TrackRow = {
@@ -27,6 +28,7 @@ function mapSong(row: SongRow, tracks: TrackRow[]): PracticeSong {
 		title: row.title,
 		artist: row.artist,
 		createdAt: row.created_at,
+		disabledTracks: row.disabled_tracks ?? [],
 		tracks: tracks.map(
 			(t): PracticeSongTrack => ({
 				id: t.id,
@@ -43,10 +45,10 @@ export async function GET() {
 		await assertAuthenticated();
 		const supabase = getSupabaseServiceClient();
 
-		const { data: songs, error: songsError } = await supabase
-			.from('practice_songs')
-			.select('id, title, artist, created_at')
-			.order('title', { ascending: true });
+	const { data: songs, error: songsError } = await supabase
+		.from('practice_songs')
+		.select('id, title, artist, created_at, disabled_tracks')
+		.order('title', { ascending: true });
 		if (songsError) throw songsError;
 
 		const { data: tracks, error: tracksError } = await supabase
@@ -82,11 +84,11 @@ export async function POST(request: Request) {
 		}
 
 		const supabase = getSupabaseServiceClient();
-		const { data, error } = await supabase
-			.from('practice_songs')
-			.insert({ title: body.title.trim(), artist: body.artist.trim() })
-			.select('id, title, artist, created_at')
-			.single();
+	const { data, error } = await supabase
+		.from('practice_songs')
+		.insert({ title: body.title.trim(), artist: body.artist.trim() })
+		.select('id, title, artist, created_at, disabled_tracks')
+		.single();
 		if (error) throw error;
 
 		return NextResponse.json(mapSong(data as SongRow, []), { status: 201 });
@@ -129,5 +131,32 @@ export async function DELETE(request: Request) {
 	} catch (error: unknown) {
 		const status = (error as { status?: number }).status ?? 500;
 		return NextResponse.json({ error: 'Failed to delete song' }, { status });
+	}
+}
+
+/** Update mutable song fields (currently: disabled_tracks). */
+export async function PATCH(request: Request) {
+	try {
+		await assertAuthenticated();
+		const { searchParams } = new URL(request.url);
+		const id = searchParams.get('id');
+		if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
+
+		const body = (await request.json()) as { disabledTracks?: unknown };
+		if (!Array.isArray(body.disabledTracks)) {
+			return NextResponse.json({ error: 'disabledTracks must be an array' }, { status: 400 });
+		}
+
+		const supabase = getSupabaseServiceClient();
+		const { error } = await supabase
+			.from('practice_songs')
+			.update({ disabled_tracks: body.disabledTracks as string[] })
+			.eq('id', id);
+
+		if (error) throw error;
+		return NextResponse.json({ ok: true });
+	} catch (error: unknown) {
+		const status = (error as { status?: number }).status ?? 500;
+		return NextResponse.json({ error: 'Failed to update song' }, { status });
 	}
 }
