@@ -87,6 +87,7 @@ export interface PracticeSongTrack {
 	songId: string;
 	trackKey: string;
 	storagePath: string;
+	version: string;
 }
 
 export const PRACTICE_TRACK_DEFS = [

@@ -12,6 +12,7 @@ type TrackRow = {
 	song_id: string;
 	track_key: string;
 	storage_path: string;
+	version: string;
 };
 
 function mapTrack(row: TrackRow): PracticeSongTrack {
@@ -20,6 +21,7 @@ function mapTrack(row: TrackRow): PracticeSongTrack {
 		songId: row.song_id,
 		trackKey: row.track_key,
 		storagePath: row.storage_path,
+		version: row.version,
 	};
 }
 
@@ -45,10 +47,11 @@ export async function POST(request: Request) {
 		const { data, error } = await supabase
 			.from('practice_song_tracks')
 			.upsert(
-				{ song_id: songId, track_key: trackKey, storage_path: storagePath },
+				// version regenerates on every upsert so clients know to bust their cache
+				{ song_id: songId, track_key: trackKey, storage_path: storagePath, version: crypto.randomUUID() },
 				{ onConflict: 'song_id,track_key' },
 			)
-			.select('id, song_id, track_key, storage_path')
+			.select('id, song_id, track_key, storage_path, version')
 			.single();
 
 		if (error) throw error;

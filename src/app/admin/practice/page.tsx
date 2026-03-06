@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 type SongRow = { id: string; title: string; artist: string; created_at: string; disabled_tracks: string[] };
-type TrackRow = { id: string; song_id: string; track_key: string; storage_path: string };
+type TrackRow = { id: string; song_id: string; track_key: string; storage_path: string; version: string };
 
 export default async function PracticePage() {
 	const isAuthed = await isAuthenticatedFromCookies();
@@ -27,7 +27,7 @@ export default async function PracticePage() {
 
 	const { data: tracks } = await supabase
 		.from('practice_song_tracks')
-		.select('id, song_id, track_key, storage_path');
+		.select('id, song_id, track_key, storage_path, version');
 
 	const tracksBySong = new Map<string, TrackRow[]>();
 	for (const track of tracks ?? []) {
@@ -51,6 +51,7 @@ export default async function PracticePage() {
 					songId: t.song_id,
 					trackKey: t.track_key,
 					storagePath: t.storage_path,
+					version: t.version,
 				}),
 			),
 		};
