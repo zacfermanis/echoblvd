@@ -20,6 +20,7 @@ type TrackRow = {
 	song_id: string;
 	track_key: string;
 	storage_path: string;
+	version: string;
 };
 
 function mapSong(row: SongRow, tracks: TrackRow[]): PracticeSong {
@@ -35,6 +36,7 @@ function mapSong(row: SongRow, tracks: TrackRow[]): PracticeSong {
 				songId: t.song_id,
 				trackKey: t.track_key,
 				storagePath: t.storage_path,
+				version: t.version,
 			}),
 		),
 	};
@@ -53,7 +55,7 @@ export async function GET() {
 
 		const { data: tracks, error: tracksError } = await supabase
 			.from('practice_song_tracks')
-			.select('id, song_id, track_key, storage_path');
+			.select('id, song_id, track_key, storage_path, version');
 		if (tracksError) throw tracksError;
 
 		const tracksBySong = new Map<string, TrackRow[]>();

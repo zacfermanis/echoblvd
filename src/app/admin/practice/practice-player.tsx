@@ -79,9 +79,9 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 
 	const availableTracks = PRACTICE_TRACK_DEFS.filter((t) => streamUrls[t.key]);
 
-	// Stable cache key: storage path (not the signed URL which changes each load)
-	const storagePathByKey = Object.fromEntries(
-		song.tracks.map((t) => [t.trackKey, t.storagePath]),
+	// Per-track metadata used to build version-aware cache keys
+	const trackMetaByKey = Object.fromEntries(
+		song.tracks.map((t) => [t.trackKey, { storagePath: t.storagePath, version: t.version }]),
 	);
 
 	// ── RAF time display ──────────────────────────────────────────
@@ -127,16 +127,18 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 			const cache = await caches.open(CACHE_NAME);
 
 			const loadTrack = async (trackKey: string, signedUrl: string): Promise<[string, AudioBuffer]> => {
-				const storagePath = storagePathByKey[trackKey];
-				const cacheKey = `/practice-stem/${storagePath}`;
+				const meta = trackMetaByKey[trackKey];
+				// Cache key includes version so re-uploads always bust the cache.
+				// Format: /practice-stem/{storagePath}?v={version}
+				const cacheKey = meta ? `/practice-stem/${meta.storagePath}?v=${meta.version}` : null;
 
 				setLoadProgress((prev) => ({ ...prev, [trackKey]: 0 }));
 
 				let arrayBuffer: ArrayBuffer;
-				const cached = storagePath ? await cache.match(cacheKey) : null;
+				const cached = cacheKey ? await cache.match(cacheKey) : null;
 
 				if (cached) {
-					// Instant load from browser cache
+					// Instant load from browser cache — version matches, so it's fresh
 					arrayBuffer = await cached.arrayBuffer();
 					setLoadProgress((prev) => ({ ...prev, [trackKey]: 95 }));
 				} else {
@@ -145,8 +147,17 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 						setLoadProgress((prev) => ({ ...prev, [trackKey]: pct }));
 					});
 
-					// Cache a copy keyed by stable storage path for future loads
-					if (storagePath) {
+					if (cacheKey && meta) {
+						// Evict any stale cached versions of this track before storing the new one
+						const allCached = await cache.keys();
+						const stalePrefix = `/practice-stem/${meta.storagePath}?v=`;
+						await Promise.all(
+							allCached
+								.filter((r) => r.url.includes(stalePrefix) && !r.url.endsWith(`v=${meta.version}`))
+								.map((r) => cache.delete(r)),
+						);
+
+						// Cache the fresh download
 						const forCache = new Response(arrayBuffer.slice(0), {
 							headers: { 'Content-Type': 'audio/mpeg' },
 						});
