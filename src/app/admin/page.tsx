@@ -28,6 +28,12 @@ const dashboardItems = [
 		description: 'Spin the wheel to randomly pick the next song to rehearse.',
 		icon: '🎡',
 	},
+	{
+		href: '/admin/practice',
+		label: 'Practice',
+		description: 'Multi-track stem player with per-track volume and mute controls.',
+		icon: '🎛️',
+	},
 ];
 
 export default async function AdminPage() {

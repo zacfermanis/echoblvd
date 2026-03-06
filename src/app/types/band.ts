@@ -71,6 +71,40 @@ export interface SetListEntry {
   jeremyGuitar?: string;
 }
 
+// Practice feature — stem-based multi-track player
+
+export interface PracticeSong {
+	id: string;
+	title: string;
+	artist: string;
+	createdAt: string;
+	tracks: PracticeSongTrack[];
+}
+
+export interface PracticeSongTrack {
+	id: string;
+	songId: string;
+	trackKey: string;
+	storagePath: string;
+}
+
+export const PRACTICE_TRACK_DEFS = [
+	{ key: 'zac_vocals', label: 'Zac Vocals', group: 'Vocals' },
+	{ key: 'jeremy_vocals', label: 'Jeremy Vocals', group: 'Vocals' },
+	{ key: 'tom_vocals', label: 'Tom Vocals', group: 'Vocals' },
+	{ key: 'scott_vocals', label: 'Scott Vocals', group: 'Vocals' },
+	{ key: 'zac_guitar', label: 'Zac Guitar', group: 'Guitars & Keys' },
+	{ key: 'zac_keys_r', label: 'Zac Keys (R)', group: 'Guitars & Keys' },
+	{ key: 'zac_keys_l', label: 'Zac Keys (L)', group: 'Guitars & Keys' },
+	{ key: 'tom_guitar', label: 'Tom Guitar', group: 'Guitars & Keys' },
+	{ key: 'jeremy_bass', label: 'Jeremy Bass', group: 'Guitars & Keys' },
+	{ key: 'kick_drum', label: 'Kick Drum', group: 'Drums' },
+	{ key: 'snare_drum', label: 'Snare Drum', group: 'Drums' },
+	{ key: 'overhead_drums', label: 'Overhead Drums', group: 'Drums' },
+] as const;
+
+export type PracticeTrackKey = (typeof PRACTICE_TRACK_DEFS)[number]['key'];
+
 // Contact information
 export type ContactInfo = {
   email: string;
