@@ -456,7 +456,7 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 					<h2 className="text-3xl font-bold text-white leading-tight">{song.title}</h2>
 					<p className="text-gray-400 mt-0.5">{song.artist}</p>
 					<p className="text-xs text-gray-600 mt-1">
-						{availableTracks.length} of {PRACTICE_TRACK_DEFS.length} tracks loaded
+						{availableTracks.length} of {PRACTICE_TRACK_DEFS.length - (song.disabledTracks ?? []).length} tracks loaded
 					</p>
 				</div>
 			</div>
