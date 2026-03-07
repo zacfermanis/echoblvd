@@ -1,11 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { PRACTICE_TRACK_DEFS } from '@/app/types/band';
 import type { PracticeSong, PracticeSongTrack } from '@/app/types/band';
-import { PracticePlayer } from './practice-player';
 
-type View = 'list' | 'player' | 'manage';
+type View = 'list' | 'manage';
 
 interface Toast {
 	message: string;
@@ -19,41 +19,10 @@ interface Props {
 export function PracticeManager({ initialSongs }: Props) {
 	const [view, setView] = useState<View>('list');
 	const [songs, setSongs] = useState<PracticeSong[]>(initialSongs);
-	const [activeSong, setActiveSong] = useState<PracticeSong | null>(null);
-	const [streamUrls, setStreamUrls] = useState<Record<string, string>>({});
-	const [isLoadingUrls, setIsLoadingUrls] = useState(false);
-	const [loadingForId, setLoadingForId] = useState<string | null>(null);
 
 	async function refreshSongs() {
 		const res = await fetch('/api/admin/practice/songs');
 		if (res.ok) setSongs((await res.json()) as PracticeSong[]);
-	}
-
-	async function handleLoadSong(song: PracticeSong) {
-		setIsLoadingUrls(true);
-		setLoadingForId(song.id);
-		try {
-			const res = await fetch(`/api/admin/practice/stream-urls?songId=${song.id}`);
-			const data = (await res.json()) as { urls: Record<string, string> };
-			setStreamUrls(data.urls ?? {});
-			setActiveSong(song);
-			setView('player');
-		} catch {
-			setStreamUrls({});
-		} finally {
-			setIsLoadingUrls(false);
-			setLoadingForId(null);
-		}
-	}
-
-	if (view === 'player' && activeSong) {
-		return (
-			<PracticePlayer
-				song={activeSong}
-				streamUrls={streamUrls}
-				onBack={() => setView('list')}
-			/>
-		);
 	}
 
 	if (view === 'manage') {
@@ -119,21 +88,12 @@ export function PracticeManager({ initialSongs }: Props) {
 
 							<TrackStatusBar tracks={song.tracks} disabledTracks={song.disabledTracks ?? []} />
 
-							<button
-								type="button"
-								onClick={() => handleLoadSong(song)}
-								disabled={isLoadingUrls}
-								className="mt-auto rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors"
+							<Link
+								href={`/admin/practice/${song.id}`}
+								className="mt-auto rounded-md bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-sm font-medium transition-colors text-center block"
 							>
-								{isLoadingUrls && loadingForId === song.id ? (
-									<span className="flex items-center justify-center gap-2">
-										<span className="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-										Loading…
-									</span>
-								) : (
-									'Load Song'
-								)}
-							</button>
+								Load Song
+							</Link>
 						</div>
 					))}
 				</div>
