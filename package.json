@@ -20,7 +20,8 @@
     "next": "15.4.10",
     "nodemailer": "^6.10.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "wasm-media-encoders": "^0.7.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
