@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createMp3Encoder } from 'wasm-media-encoders';
 import { PRACTICE_TRACK_DEFS } from '@/app/types/band';
 import type { PracticeSong } from '@/app/types/band';
 
@@ -76,6 +77,7 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 	const [solo, setSolo] = useState<Record<string, boolean>>(() =>
 		Object.fromEntries(PRACTICE_TRACK_DEFS.map((t) => [t.key, false])),
 	);
+	const [isExporting, setIsExporting] = useState(false);
 
 	const availableTracks = PRACTICE_TRACK_DEFS.filter((t) => streamUrls[t.key]);
 
@@ -367,6 +369,93 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 		applyGains(volumes, muted, newSolo);
 	}
 
+	/** Compute gain for each track (same logic as applyGains) for offline mix. */
+	function getMixGains(): Record<string, number> {
+		const anySolo = Object.values(solo).some(Boolean);
+		const out: Record<string, number> = {};
+		for (const t of availableTracks) {
+			if (anySolo) {
+				out[t.key] = solo[t.key] ? (volumes[t.key] ?? 100) / 100 : 0;
+			} else {
+				out[t.key] = muted[t.key] ? 0 : (volumes[t.key] ?? 100) / 100;
+			}
+		}
+		return out;
+	}
+
+	/** Render current mix (volume/mute/solo) to an MP3 and trigger download. */
+	async function handleDownloadMix() {
+		if (availableTracks.length === 0 || isExporting) return;
+
+		const buffers = buffersRef.current;
+		let sampleRate = 44100;
+		let durationSec = 0;
+		for (const t of availableTracks) {
+			const buf = buffers[t.key];
+			if (buf) {
+				sampleRate = buf.sampleRate;
+				durationSec = Math.max(durationSec, buf.duration);
+			}
+		}
+		if (durationSec <= 0) return;
+
+		setIsExporting(true);
+		try {
+			const lengthFrames = Math.ceil(durationSec * sampleRate);
+			const ctx = new OfflineAudioContext(2, lengthFrames, sampleRate);
+			const mixGains = getMixGains();
+
+			for (const t of availableTracks) {
+				const buffer = buffers[t.key];
+				const gainVal = mixGains[t.key] ?? 0;
+				if (!buffer || gainVal === 0) continue;
+
+				const source = ctx.createBufferSource();
+				source.buffer = buffer;
+				const gain = ctx.createGain();
+				gain.gain.value = gainVal;
+				source.connect(gain);
+				gain.connect(ctx.destination);
+				source.start(0);
+			}
+
+			const rendered = await ctx.startRendering();
+			const leftF32 = rendered.getChannelData(0);
+			const rightF32 = rendered.numberOfChannels >= 2 ? rendered.getChannelData(1) : leftF32;
+
+			const encoder = await createMp3Encoder();
+			encoder.configure({
+				sampleRate,
+				channels: 2,
+				bitrate: 128,
+			});
+
+			const encoded = encoder.encode([leftF32, rightF32]);
+			const copy1 = new Uint8Array(encoded.length);
+			if (encoded.length > 0) copy1.set(encoded);
+			const final = encoder.finalize();
+			const copy2 = new Uint8Array(final.length);
+			if (final.length > 0) copy2.set(final);
+
+			const totalLen = copy1.length + copy2.length;
+			const combined = new Uint8Array(totalLen);
+			combined.set(copy1);
+			combined.set(copy2, copy1.length);
+
+			const blob = new Blob([combined], { type: 'audio/mp3' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${song.title.replace(/[^\w\s-]/g, '')}-mix.mp3`;
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch (err) {
+			console.error('Export mix failed:', err);
+		} finally {
+			setIsExporting(false);
+		}
+	}
+
 	// ── Loading screen ────────────────────────────────────────────
 	if (loadState === 'loading') {
 		const totalTracks = availableTracks.length;
@@ -517,43 +606,75 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 						</div>
 
 						{/* Buttons */}
-						<div className="flex items-center justify-center gap-4">
-							<button
-								type="button"
-								onClick={handleRewind}
-								title="Rewind to start"
-								className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 transition-colors text-lg"
-							>
-								⏮
-							</button>
-
-							{isPlaying ? (
+						<div className="flex items-center w-full">
+							<div className="flex-1 flex items-center justify-center gap-4">
 								<button
 									type="button"
-									onClick={handlePause}
-									title="Pause"
-									className="w-16 h-16 flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-2xl shadow-lg transition-colors"
+									onClick={handleRewind}
+									title="Rewind to start"
+									className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 transition-colors text-lg"
 								>
-									⏸
+									⏮
 								</button>
-							) : (
+
+								{isPlaying ? (
+									<button
+										type="button"
+										onClick={handlePause}
+										title="Pause"
+										className="w-16 h-16 flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-2xl shadow-lg transition-colors"
+									>
+										⏸
+									</button>
+								) : (
+									<button
+										type="button"
+										onClick={handlePlay}
+										title="Play"
+										className="w-16 h-16 flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-2xl shadow-lg transition-colors"
+									>
+										▶
+									</button>
+								)}
+
 								<button
 									type="button"
-									onClick={handlePlay}
-									title="Play"
-									className="w-16 h-16 flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-500 text-white text-2xl shadow-lg transition-colors"
+									onClick={handleStop}
+									title="Stop"
+									className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 transition-colors text-lg"
 								>
-									▶
+									⏹
 								</button>
-							)}
-
+							</div>
 							<button
 								type="button"
-								onClick={handleStop}
-								title="Stop"
-								className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 transition-colors text-lg"
+								onClick={handleDownloadMix}
+								disabled={isExporting}
+								title="Download MP3 mix (current volume, mute & solo)"
+								className="flex items-center gap-2 px-2.5 py-2 sm:px-4 rounded-full border border-gray-600 text-gray-300 hover:text-white hover:border-gray-400 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
 							>
-								⏹
+								{isExporting ? (
+									<span className="animate-pulse">…</span>
+								) : (
+									<>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											strokeWidth="2"
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											className="w-4 h-4 shrink-0"
+											aria-hidden
+										>
+											<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+											<polyline points="7 10 12 15 17 10" />
+											<line x1="12" y1="15" x2="12" y2="3" />
+										</svg>
+										<span className="hidden sm:inline">Download current mix</span>
+									</>
+								)}
 							</button>
 						</div>
 					</div>
