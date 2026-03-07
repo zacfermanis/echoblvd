@@ -10,9 +10,10 @@ export async function GET(request: Request) {
 		await assertAuthenticated();
 		const { searchParams } = new URL(request.url);
 		const songId = searchParams.get('songId');
+		const takeId = searchParams.get('takeId') ?? undefined;
 		if (!songId) return NextResponse.json({ error: 'songId is required' }, { status: 400 });
 
-		const urls = await getPracticeStreamUrls(songId);
+		const urls = await getPracticeStreamUrls(songId, takeId || null);
 		return NextResponse.json({ urls });
 	} catch (error: unknown) {
 		const status = (error as { status?: number }).status ?? 500;

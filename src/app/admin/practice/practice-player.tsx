@@ -3,12 +3,50 @@
 import { useEffect, useRef, useState } from 'react';
 import { createMp3Encoder } from 'wasm-media-encoders';
 import { PRACTICE_TRACK_DEFS } from '@/app/types/band';
-import type { PracticeSong } from '@/app/types/band';
+import type { PracticeSong, PracticeTake } from '@/app/types/band';
+
+const PRACTICE_SETTINGS_KEY = 'practice-settings';
+
+export interface SavedPracticeSettings {
+	volumes: Record<string, number>;
+	muted: Record<string, boolean>;
+	solo: Record<string, boolean>;
+	fxParams: Record<string, TrackFxParams>;
+	masterFxParams: TrackFxParams;
+}
+
+function settingsStorageKey(songId: string, takeId: string | null): string {
+	return takeId ? `${PRACTICE_SETTINGS_KEY}-${songId}-${takeId}` : `${PRACTICE_SETTINGS_KEY}-${songId}`;
+}
+
+function loadSavedSettings(songId: string, takeId: string | null): SavedPracticeSettings | null {
+	try {
+		const raw = typeof window !== 'undefined' ? localStorage.getItem(settingsStorageKey(songId, takeId)) : null;
+		if (!raw) return null;
+		const parsed = JSON.parse(raw) as unknown;
+		if (!parsed || typeof parsed !== 'object') return null;
+		return parsed as SavedPracticeSettings;
+	} catch {
+		return null;
+	}
+}
+
+function saveSettingsToStorage(songId: string, takeId: string | null, settings: SavedPracticeSettings): void {
+	try {
+		localStorage.setItem(settingsStorageKey(songId, takeId), JSON.stringify(settings));
+	} catch {
+		// quota or disabled
+	}
+}
 
 interface Props {
 	song: PracticeSong;
 	streamUrls: Record<string, string>;
 	onBack: () => void;
+	/** When set, indicates which take is active; null = original tracks. */
+	currentTakeId?: string | null;
+	takes?: PracticeTake[] | null;
+	onTakeChange?: (takeId: string | null) => void;
 }
 
 function formatTime(seconds: number): string {
@@ -745,7 +783,7 @@ function downloadWithProgress(
 	});
 }
 
-export function PracticePlayer({ song, streamUrls, onBack }: Props) {
+export function PracticePlayer({ song, streamUrls, onBack, currentTakeId = null, takes, onTakeChange }: Props) {
 	// ── Web Audio API refs ────────────────────────────────────────
 	const audioCtxRef = useRef<AudioContext | null>(null);
 	const buffersRef = useRef<Record<string, AudioBuffer>>({});
@@ -782,12 +820,39 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 	const [masterFxParams, setMasterFxParams] = useState<TrackFxParams>({ ...DEFAULT_FX });
 	const [masterFxPanelOpen, setMasterFxPanelOpen] = useState(false);
 	const [isExporting, setIsExporting] = useState(false);
+	const [settingsSavedAt, setSettingsSavedAt] = useState<number | null>(null);
 
 	const fxChainRef = useRef<Record<string, FxChain | null>>({});
 	const masterInputRef = useRef<GainNode | null>(null);
 	const masterFxChainRef = useRef<FxChain | null>(null);
 
 	const availableTracks = PRACTICE_TRACK_DEFS.filter((t) => streamUrls[t.key]);
+
+	// Apply saved settings for this song/take on mount
+	useEffect(() => {
+		const saved = loadSavedSettings(song.id, currentTakeId ?? null);
+		if (!saved) return;
+		const defaultVolumes = Object.fromEntries(PRACTICE_TRACK_DEFS.map((t) => [t.key, 100]));
+		const defaultMuted = Object.fromEntries(PRACTICE_TRACK_DEFS.map((t) => [t.key, false]));
+		const defaultSolo = Object.fromEntries(PRACTICE_TRACK_DEFS.map((t) => [t.key, false]));
+		setVolumes((prev) => ({ ...defaultVolumes, ...prev, ...saved.volumes }));
+		setMuted((prev) => ({ ...defaultMuted, ...prev, ...saved.muted }));
+		setSolo((prev) => ({ ...defaultSolo, ...prev, ...saved.solo }));
+		setFxParams((prev) => {
+			const next = { ...prev };
+			for (const [key, p] of Object.entries(saved.fxParams ?? {})) {
+				next[key] = normalizeFxParams(p);
+			}
+			return next;
+		});
+		if (saved.masterFxParams) setMasterFxParams(normalizeFxParams(saved.masterFxParams));
+	}, [song.id, currentTakeId ?? '']);
+
+	// When stems are ready, apply current mixer state (e.g. from saved settings) to gain nodes
+	useEffect(() => {
+		if (loadState !== 'ready' || availableTracks.length === 0) return;
+		applyGains(volumes, muted, solo);
+	}, [loadState, volumes, muted, solo]);
 
 	// Per-track metadata used to build version-aware cache keys
 	const trackMetaByKey = Object.fromEntries(
@@ -946,7 +1011,7 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 			gainNodesRef.current = {};
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [song.id]);
+	}, [song.id, Object.keys(streamUrls).sort().join(',')]);
 
 	// ── Playback helpers ──────────────────────────────────────────
 
@@ -1321,6 +1386,20 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 		}
 	}
 
+	function handleSaveSettings() {
+		saveSettingsToStorage(song.id, currentTakeId ?? null, {
+			volumes: { ...volumes },
+			muted: { ...muted },
+			solo: { ...solo },
+			fxParams: Object.fromEntries(
+				Object.entries(fxParams).map(([k, p]) => [k, normalizeFxParams(p)]),
+			),
+			masterFxParams: normalizeFxParams(masterFxParams),
+		});
+		setSettingsSavedAt(Date.now());
+		setTimeout(() => setSettingsSavedAt(null), 2000);
+	}
+
 	// ── Loading screen ────────────────────────────────────────────
 	if (loadState === 'loading') {
 		const totalTracks = availableTracks.length;
@@ -1406,10 +1485,12 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 	}
 
 	// ── Player UI ─────────────────────────────────────────────────
+	const hasTakes = (takes?.length ?? 0) > 0;
+
 	return (
 		<div className="space-y-6">
 			{/* Song header */}
-			<div className="flex items-start gap-4">
+			<div className="flex flex-wrap items-start gap-4">
 				<button
 					type="button"
 					onClick={onBack}
@@ -1417,13 +1498,52 @@ export function PracticePlayer({ song, streamUrls, onBack }: Props) {
 				>
 					← Back
 				</button>
-				<div>
+				<div className="min-w-0 flex-1">
 					<h2 className="text-3xl font-bold text-white leading-tight">{song.title}</h2>
 					<p className="text-gray-400 mt-0.5">{song.artist}</p>
 					<p className="text-xs text-gray-600 mt-1">
 						{availableTracks.length} of {PRACTICE_TRACK_DEFS.length - (song.disabledTracks ?? []).length} tracks loaded
 					</p>
+					{/* Take switcher */}
+					{hasTakes && onTakeChange && (
+						<div className="flex flex-wrap items-center gap-2 mt-3">
+							<span className="text-xs text-gray-500 uppercase tracking-widest">Source:</span>
+							<button
+								type="button"
+								onClick={() => onTakeChange(null)}
+								className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
+									currentTakeId == null || currentTakeId === ''
+										? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+										: 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+								}`}
+							>
+								Original
+							</button>
+							{(takes ?? []).map((take) => (
+								<button
+									key={take.id}
+									type="button"
+									onClick={() => onTakeChange(take.id)}
+									className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
+										currentTakeId === take.id
+											? 'border-indigo-500 bg-indigo-500/20 text-indigo-300'
+											: 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+									}`}
+								>
+									{take.name}
+								</button>
+							))}
+						</div>
+					)}
 				</div>
+				<button
+					type="button"
+					onClick={handleSaveSettings}
+					title="Save mixer and FX settings for this song (and take) to this device"
+					className="shrink-0 text-xs px-3 py-2 rounded border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 transition-colors font-medium"
+				>
+					{settingsSavedAt ? 'Saved ✓' : 'Save settings'}
+				</button>
 			</div>
 
 			{availableTracks.length === 0 ? (
