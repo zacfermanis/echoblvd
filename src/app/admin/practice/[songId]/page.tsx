@@ -4,28 +4,48 @@ import { redirect, notFound } from 'next/navigation';
 import { isAuthenticatedFromCookies } from '@/app/lib/admin-auth';
 import { getPracticeStreamUrls } from '@/app/lib/practice-stream-urls';
 import { getSupabaseServiceClient } from '@/app/lib/supabase';
-import type { PracticeSong, PracticeSongTrack } from '@/app/types/band';
+import type { PracticeSong, PracticeSongTrack, PracticeTake } from '@/app/types/band';
 import { PracticePlayerPage } from './practice-player-page';
 
 type SongRow = { id: string; title: string; artist: string; created_at: string; disabled_tracks: string[] };
-type TrackRow = { id: string; song_id: string; track_key: string; storage_path: string; version: string };
+type TrackRow = { id: string; song_id: string; track_key: string; storage_path: string; version: string; take_id?: string | null };
+type TakeRow = { id: string; song_id: string; name: string; created_at: string };
 
-function mapSong(row: SongRow, tracks: TrackRow[]): PracticeSong {
+function mapTrack(t: TrackRow): PracticeSongTrack {
+	return {
+		id: t.id,
+		songId: t.song_id,
+		trackKey: t.track_key,
+		storagePath: t.storage_path,
+		version: t.version,
+		takeId: t.take_id ?? undefined,
+	};
+}
+
+function mapSong(
+	row: SongRow,
+	originalTracks: TrackRow[],
+	takesWithTracks: { take: TakeRow; tracks: TrackRow[] }[],
+): PracticeSong {
 	return {
 		id: row.id,
 		title: row.title,
 		artist: row.artist,
 		createdAt: row.created_at,
 		disabledTracks: row.disabled_tracks ?? [],
-		tracks: tracks.map(
-			(t): PracticeSongTrack => ({
-				id: t.id,
-				songId: t.song_id,
-				trackKey: t.track_key,
-				storagePath: t.storage_path,
-				version: t.version,
-			}),
-		),
+		tracks: originalTracks.map(mapTrack),
+		takes: takesWithTracks.length > 0
+			? (takesWithTracks.map(
+					({ take, tracks }) =>
+						({
+							id: take.id,
+							songId: take.song_id,
+							name: take.name,
+							createdAt: take.created_at,
+							tracks: tracks.map(mapTrack),
+						}) satisfies PracticeTake,
+				) as PracticeTake[])
+			: undefined,
 	};
 }
 
@@ -68,13 +88,32 @@ export default async function PracticeSongPage({ params }: Props) {
 
 	if (songError || !songRow) notFound();
 
-	const { data: trackRows } = await supabase
+	const { data: allTrackRows } = await supabase
 		.from('practice_song_tracks')
-		.select('id, song_id, track_key, storage_path, version')
+		.select('id, song_id, track_key, storage_path, version, take_id')
 		.eq('song_id', songId);
 
-	const song = mapSong(songRow as SongRow, (trackRows ?? []) as TrackRow[]);
-	const streamUrls = await getPracticeStreamUrls(songId);
+	const trackList = (allTrackRows ?? []) as TrackRow[];
+	const originalTracks = trackList.filter((t) => t.take_id == null || t.take_id === '');
+
+	let takesWithTracks: { take: TakeRow; tracks: TrackRow[] }[] = [];
+	try {
+		const { data: takeRows } = await supabase
+			.from('practice_song_takes')
+			.select('id, song_id, name, created_at')
+			.eq('song_id', songId)
+			.order('created_at', { ascending: true });
+		const takesList = (takeRows ?? []) as TakeRow[];
+		takesWithTracks = takesList.map((take) => ({
+			take,
+			tracks: trackList.filter((t) => t.take_id === take.id),
+		}));
+	} catch {
+		// practice_song_takes may not exist before migration
+	}
+
+	const song = mapSong(songRow as SongRow, originalTracks, takesWithTracks);
+	const streamUrls = await getPracticeStreamUrls(songId, null);
 
 	return (
 		<div className="min-h-screen bg-gray-900">
@@ -87,7 +126,7 @@ export default async function PracticeSongPage({ params }: Props) {
 						← Practice
 					</Link>
 				</div>
-				<PracticePlayerPage song={song} streamUrls={streamUrls} />
+				<PracticePlayerPage song={song} initialStreamUrls={streamUrls} />
 			</div>
 		</div>
 	);

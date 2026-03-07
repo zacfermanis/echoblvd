@@ -18,9 +18,10 @@ export async function POST(request: Request) {
 			songId: string;
 			trackKey: string;
 			fileExtension: string;
+			takeId?: string | null;
 		};
 
-		const { songId, trackKey, fileExtension } = body;
+		const { songId, trackKey, fileExtension, takeId } = body;
 
 		if (!songId || !trackKey || !fileExtension) {
 			return NextResponse.json(
@@ -34,7 +35,10 @@ export async function POST(request: Request) {
 		}
 
 		const ext = fileExtension.toLowerCase().replace(/^\./, '');
-		const storagePath = `songs/${songId}/${trackKey as PracticeTrackKey}.${ext}`;
+		const storagePath =
+			takeId != null && takeId !== ''
+				? `songs/${songId}/takes/${takeId}/${trackKey as PracticeTrackKey}.${ext}`
+				: `songs/${songId}/${trackKey as PracticeTrackKey}.${ext}`;
 
 		// ContentType is intentionally excluded from the presigned command.
 		// Including it locks the signature to a specific MIME string — if the

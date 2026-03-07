@@ -79,7 +79,17 @@ export interface PracticeSong {
 	artist: string;
 	createdAt: string;
 	tracks: PracticeSongTrack[];
+	/** Alternate takes (e.g. rehearsal recordings); each has its own set of tracks. */
+	takes?: PracticeTake[];
 	disabledTracks: string[];
+}
+
+export interface PracticeTake {
+	id: string;
+	songId: string;
+	name: string;
+	createdAt: string;
+	tracks: PracticeSongTrack[];
 }
 
 export interface PracticeSongTrack {
@@ -88,6 +98,8 @@ export interface PracticeSongTrack {
 	trackKey: string;
 	storagePath: string;
 	version: string;
+	/** Set when this track belongs to a take; null for original. */
+	takeId?: string | null;
 }
 
 export const PRACTICE_TRACK_DEFS = [

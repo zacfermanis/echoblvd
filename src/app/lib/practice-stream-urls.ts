@@ -14,13 +14,22 @@ const MIME: Record<string, string> = {
 	flac: 'audio/flac',
 };
 
-/** Returns presigned streaming URLs for all uploaded tracks of a song. Caller must ensure auth. */
-export async function getPracticeStreamUrls(songId: string): Promise<Record<string, string>> {
+/** Returns presigned streaming URLs for all uploaded tracks of a song (or a take). Caller must ensure auth. */
+export async function getPracticeStreamUrls(
+	songId: string,
+	takeId?: string | null,
+): Promise<Record<string, string>> {
 	const supabase = getSupabaseServiceClient();
-	const { data: tracks, error } = await supabase
+	let query = supabase
 		.from('practice_song_tracks')
 		.select('track_key, storage_path')
 		.eq('song_id', songId);
+	if (takeId != null && takeId !== '') {
+		query = query.eq('take_id', takeId);
+	} else {
+		query = query.is('take_id', null);
+	}
+	const { data: tracks, error } = await query;
 
 	if (error) throw error;
 
