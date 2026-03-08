@@ -51,6 +51,7 @@ function mapSong(
 
 interface Props {
 	params: Promise<{ songId: string }>;
+	searchParams: Promise<{ takeId?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -73,11 +74,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	};
 }
 
-export default async function PracticeSongPage({ params }: Props) {
+export default async function PracticeSongPage({ params, searchParams }: Props) {
 	const isAuthed = await isAuthenticatedFromCookies();
 	if (!isAuthed) redirect('/admin');
 
 	const { songId } = await params;
+	const { takeId: initialTakeId } = await searchParams;
 	const supabase = getSupabaseServiceClient();
 
 	const { data: songRow, error: songError } = await supabase
@@ -113,7 +115,12 @@ export default async function PracticeSongPage({ params }: Props) {
 	}
 
 	const song = mapSong(songRow as SongRow, originalTracks, takesWithTracks);
-	const streamUrls = await getPracticeStreamUrls(songId, null);
+
+	// If a takeId was requested, pre-load stream URLs for that take so there's no client-side fetch delay
+	const resolvedTakeId = initialTakeId && (song.takes ?? []).some((t) => t.id === initialTakeId)
+		? initialTakeId
+		: null;
+	const streamUrls = await getPracticeStreamUrls(songId, resolvedTakeId);
 
 	return (
 		<div className="min-h-screen bg-gray-900">
@@ -126,7 +133,11 @@ export default async function PracticeSongPage({ params }: Props) {
 						← Practice
 					</Link>
 				</div>
-				<PracticePlayerPage song={song} initialStreamUrls={streamUrls} />
+				<PracticePlayerPage
+					song={song}
+					initialStreamUrls={streamUrls}
+					initialTakeId={resolvedTakeId}
+				/>
 			</div>
 		</div>
 	);
