@@ -1,11 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { PRACTICE_TRACK_DEFS } from '@/app/types/band';
-import type { PracticeSong, PracticeSongTrack } from '@/app/types/band';
-import { PracticePlayer } from './practice-player';
+import type { PracticeSong, PracticeSongTrack, PracticeTake } from '@/app/types/band';
 
-type View = 'list' | 'player' | 'manage';
+type View = 'list' | 'manage';
 
 interface Toast {
 	message: string;
@@ -19,41 +19,10 @@ interface Props {
 export function PracticeManager({ initialSongs }: Props) {
 	const [view, setView] = useState<View>('list');
 	const [songs, setSongs] = useState<PracticeSong[]>(initialSongs);
-	const [activeSong, setActiveSong] = useState<PracticeSong | null>(null);
-	const [streamUrls, setStreamUrls] = useState<Record<string, string>>({});
-	const [isLoadingUrls, setIsLoadingUrls] = useState(false);
-	const [loadingForId, setLoadingForId] = useState<string | null>(null);
 
 	async function refreshSongs() {
 		const res = await fetch('/api/admin/practice/songs');
 		if (res.ok) setSongs((await res.json()) as PracticeSong[]);
-	}
-
-	async function handleLoadSong(song: PracticeSong) {
-		setIsLoadingUrls(true);
-		setLoadingForId(song.id);
-		try {
-			const res = await fetch(`/api/admin/practice/stream-urls?songId=${song.id}`);
-			const data = (await res.json()) as { urls: Record<string, string> };
-			setStreamUrls(data.urls ?? {});
-			setActiveSong(song);
-			setView('player');
-		} catch {
-			setStreamUrls({});
-		} finally {
-			setIsLoadingUrls(false);
-			setLoadingForId(null);
-		}
-	}
-
-	if (view === 'player' && activeSong) {
-		return (
-			<PracticePlayer
-				song={activeSong}
-				streamUrls={streamUrls}
-				onBack={() => setView('list')}
-			/>
-		);
 	}
 
 	if (view === 'manage') {
@@ -65,6 +34,7 @@ export function PracticeManager({ initialSongs }: Props) {
 					await refreshSongs();
 					setView('list');
 				}}
+				onTakeAdded={refreshSongs}
 			/>
 		);
 	}
@@ -119,21 +89,12 @@ export function PracticeManager({ initialSongs }: Props) {
 
 							<TrackStatusBar tracks={song.tracks} disabledTracks={song.disabledTracks ?? []} />
 
-							<button
-								type="button"
-								onClick={() => handleLoadSong(song)}
-								disabled={isLoadingUrls}
-								className="mt-auto rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2 text-sm font-medium transition-colors"
+							<Link
+								href={`/admin/practice/${song.id}`}
+								className="mt-auto rounded-md bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-sm font-medium transition-colors text-center block"
 							>
-								{isLoadingUrls && loadingForId === song.id ? (
-									<span className="flex items-center justify-center gap-2">
-										<span className="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-										Loading…
-									</span>
-								) : (
-									'Load Song'
-								)}
-							</button>
+								Load Song
+							</Link>
 						</div>
 					))}
 				</div>
@@ -228,9 +189,10 @@ interface ManageViewProps {
 	songs: PracticeSong[];
 	setSongs: React.Dispatch<React.SetStateAction<PracticeSong[]>>;
 	onBack: () => void;
+	onTakeAdded?: () => void;
 }
 
-function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
+function ManageView({ songs, setSongs, onBack, onTakeAdded }: ManageViewProps) {
 	const [expandedId, setExpandedId] = useState<string | null>(null);
 	const [isAdding, setIsAdding] = useState(false);
 	const [newTitle, setNewTitle] = useState('');
@@ -402,6 +364,7 @@ function ManageView({ songs, setSongs, onBack }: ManageViewProps) {
 									prev.map((s) => (s.id === updated.id ? updated : s)),
 								);
 							}}
+							onTakeAdded={onTakeAdded}
 							showToast={showToast}
 						/>
 					))}
@@ -421,6 +384,7 @@ interface SongTrackManagerProps {
 	onToggle: () => void;
 	onDelete: () => void;
 	onTrackChange: (updated: PracticeSong) => void;
+	onTakeAdded?: () => void;
 	showToast: (msg: string, type?: Toast['type']) => void;
 }
 
@@ -430,11 +394,20 @@ function SongTrackManager({
 	onToggle,
 	onDelete,
 	onTrackChange,
+	onTakeAdded,
 	showToast,
 }: SongTrackManagerProps) {
-	const uploadedKeys = new Map(song.tracks.map((t) => [t.trackKey, t]));
-	const uploadedCount = uploadedKeys.size;
+	const [selectedTakeId, setSelectedTakeId] = useState<string | null>(null);
 	const [showHidden, setShowHidden] = useState(false);
+	const [isAddingTake, setIsAddingTake] = useState(false);
+	const [deleteTakeConfirm, setDeleteTakeConfirm] = useState<PracticeTake | null>(null);
+
+	const effectiveTracks =
+		selectedTakeId != null && (song.takes?.length ?? 0) > 0
+			? (song.takes?.find((t) => t.id === selectedTakeId)?.tracks ?? [])
+			: song.tracks;
+	const uploadedKeys = new Map(effectiveTracks.map((t) => [t.trackKey, t]));
+	const uploadedCount = uploadedKeys.size;
 
 	// disabled = in DB disabledTracks AND not yet uploaded (uploaded always shows)
 	const disabledSet = new Set(song.disabledTracks ?? []);
@@ -444,6 +417,52 @@ function SongTrackManager({
 		const isDisabled = disabledSet.has(t.key) && !uploadedKeys.has(t.key);
 		return !isDisabled || showHidden;
 	});
+
+	function handleTracksChange(newTracks: PracticeSongTrack[]) {
+		if (selectedTakeId == null || selectedTakeId === '') {
+			onTrackChange({ ...song, tracks: newTracks });
+		} else {
+			onTrackChange({
+				...song,
+				takes: (song.takes ?? []).map((t) =>
+					t.id === selectedTakeId ? { ...t, tracks: newTracks } : t,
+				),
+			});
+		}
+	}
+
+	async function handleAddTake() {
+		setIsAddingTake(true);
+		try {
+			const res = await fetch('/api/admin/practice/takes', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ songId: song.id }),
+			});
+			if (!res.ok) throw new Error('Failed to create take');
+			showToast('Take added — upload tracks for this take below');
+			onTakeAdded?.();
+			const take = (await res.json()) as { id: string; name: string };
+			setSelectedTakeId(take.id);
+		} catch {
+			showToast('Failed to add take', 'error');
+		} finally {
+			setIsAddingTake(false);
+		}
+	}
+
+	async function doDeleteTake(take: PracticeTake) {
+		setDeleteTakeConfirm(null);
+		try {
+			const res = await fetch(`/api/admin/practice/takes?id=${take.id}`, { method: 'DELETE' });
+			if (!res.ok) throw new Error('Failed to delete take');
+			if (selectedTakeId === take.id) setSelectedTakeId(null);
+			showToast(`"${take.name}" deleted`);
+			onTakeAdded?.();
+		} catch {
+			showToast('Failed to delete take', 'error');
+		}
+	}
 
 	async function persistDisabled(newDisabled: string[]) {
 		try {
@@ -506,20 +525,83 @@ function SongTrackManager({
 			{/* Track upload slots */}
 			{isExpanded && (
 				<div className="border-t border-gray-700 divide-y divide-gray-700/60">
+					{/* Take selector + Add take */}
+					<div className="px-6 py-3 flex flex-wrap items-center gap-2 bg-gray-900/40 border-b border-gray-700/60">
+						<span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Source:</span>
+						<button
+							type="button"
+							onClick={() => setSelectedTakeId(null)}
+							className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
+								selectedTakeId == null ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300' : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+							}`}
+						>
+							Original
+						</button>
+						{(song.takes ?? []).map((take) => (
+							<span key={take.id} className="inline-flex items-center gap-1">
+								<button
+									type="button"
+									onClick={() => setSelectedTakeId(take.id)}
+									className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
+										selectedTakeId === take.id ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300' : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+									}`}
+								>
+									{take.name}
+								</button>
+								<button
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation();
+										setDeleteTakeConfirm(take);
+									}}
+									title={`Delete take "${take.name}"`}
+									className="text-xs p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
+									aria-label={`Delete take ${take.name}`}
+								>
+									×
+								</button>
+							</span>
+						))}
+						<button
+							type="button"
+							onClick={() => void handleAddTake()}
+							disabled={isAddingTake}
+							className="text-xs px-3 py-1.5 rounded border border-dashed border-gray-500 text-gray-400 hover:border-indigo-500 hover:text-indigo-400 transition-colors disabled:opacity-50"
+						>
+							{isAddingTake ? 'Adding…' : '+ Add take'}
+						</button>
+					</div>
+
+					{deleteTakeConfirm && (
+						<ConfirmDialog
+							title={`Delete take "${deleteTakeConfirm.name}"?`}
+							message={
+								deleteTakeConfirm.tracks.length > 0
+									? `This will permanently delete this take and its ${deleteTakeConfirm.tracks.length} uploaded track${deleteTakeConfirm.tracks.length !== 1 ? 's' : ''}. This cannot be undone.`
+									: 'This will permanently delete this take. This cannot be undone.'
+							}
+							confirmLabel="Delete take"
+							onConfirm={() => void doDeleteTake(deleteTakeConfirm)}
+							onCancel={() => setDeleteTakeConfirm(null)}
+						/>
+					)}
+
 					{visibleDefs.map((trackDef) => {
 						const existing = uploadedKeys.get(trackDef.key);
 						const isHiddenSlot = disabledSet.has(trackDef.key) && !existing;
 						return (
 							<TrackUploadSlot
-								key={trackDef.key}
+								key={`${selectedTakeId ?? 'orig'}-${trackDef.key}`}
 								song={song}
+								takeId={selectedTakeId}
+								effectiveTracks={effectiveTracks}
 								trackKey={trackDef.key}
 								trackLabel={trackDef.label}
 								existing={existing}
 								isHiddenSlot={isHiddenSlot}
 								onHide={() => hideTrack(trackDef.key)}
 								onRestore={() => restoreTrack(trackDef.key)}
-								onTrackChange={onTrackChange}
+								onTracksChange={handleTracksChange}
 								showToast={showToast}
 							/>
 						);
@@ -552,13 +634,15 @@ function SongTrackManager({
 
 interface TrackUploadSlotProps {
 	song: PracticeSong;
+	takeId: string | null;
+	effectiveTracks: PracticeSongTrack[];
 	trackKey: string;
 	trackLabel: string;
 	existing: PracticeSongTrack | undefined;
 	isHiddenSlot: boolean;
 	onHide: () => void;
 	onRestore: () => void;
-	onTrackChange: (updated: PracticeSong) => void;
+	onTracksChange: (newTracks: PracticeSongTrack[]) => void;
 	showToast: (msg: string, type?: Toast['type']) => void;
 }
 
@@ -585,13 +669,15 @@ function uploadWithProgress(
 
 function TrackUploadSlot({
 	song,
+	takeId,
+	effectiveTracks,
 	trackKey,
 	trackLabel,
 	existing,
 	isHiddenSlot,
 	onHide,
 	onRestore,
-	onTrackChange,
+	onTracksChange,
 	showToast,
 }: TrackUploadSlotProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -614,7 +700,12 @@ function TrackUploadSlot({
 			const urlRes = await fetch('/api/admin/practice/upload-url', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ songId: song.id, trackKey, fileExtension: ext }),
+				body: JSON.stringify({
+					songId: song.id,
+					trackKey,
+					fileExtension: ext,
+					...(takeId != null && takeId !== '' ? { takeId } : {}),
+				}),
 			});
 			if (!urlRes.ok) throw new Error('Failed to get upload URL');
 			const { signedUrl, storagePath } = (await urlRes.json()) as {
@@ -622,24 +713,29 @@ function TrackUploadSlot({
 				storagePath: string;
 			};
 
-			// 2. Upload directly to Supabase Storage
+			// 2. Upload directly to R2
 			await uploadWithProgress(signedUrl, file, setUploadProgress);
 
 			// 3. Record the track in the database
 			const trackRes = await fetch('/api/admin/practice/tracks', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ songId: song.id, trackKey, storagePath }),
+				body: JSON.stringify({
+					songId: song.id,
+					trackKey,
+					storagePath,
+					...(takeId != null && takeId !== '' ? { takeId } : {}),
+				}),
 			});
 			if (!trackRes.ok) throw new Error('Failed to save track record');
 			const savedTrack = (await trackRes.json()) as PracticeSongTrack;
 
 			// 4. Update local state
 			const updatedTracks = [
-				...song.tracks.filter((t) => t.trackKey !== trackKey),
+				...effectiveTracks.filter((t) => t.trackKey !== trackKey),
 				savedTrack,
 			];
-			onTrackChange({ ...song, tracks: updatedTracks });
+			onTracksChange(updatedTracks);
 			showToast(`${trackLabel} uploaded`);
 		} catch (err) {
 			showToast(
@@ -660,8 +756,8 @@ function TrackUploadSlot({
 				method: 'DELETE',
 			});
 			if (!res.ok) throw new Error('Delete failed');
-			const updatedTracks = song.tracks.filter((t) => t.trackKey !== trackKey);
-			onTrackChange({ ...song, tracks: updatedTracks });
+			const updatedTracks = effectiveTracks.filter((t) => t.trackKey !== trackKey);
+			onTracksChange(updatedTracks);
 			showToast(`${trackLabel} removed`);
 		} catch {
 			showToast('Failed to remove track', 'error');
