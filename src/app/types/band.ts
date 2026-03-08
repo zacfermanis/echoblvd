@@ -95,6 +95,7 @@ export const PRACTICE_TRACK_DEFS = [
 	{ key: 'jeremy_vocals', label: 'Jeremy Vocals', group: 'Vocals' },
 	{ key: 'tom_vocals', label: 'Tom Vocals', group: 'Vocals' },
 	{ key: 'scott_vocals', label: 'Scott Vocals', group: 'Vocals' },
+	{ key: 'fx_vox', label: 'FX Vocals', group: 'Vocals' },
 	{ key: 'zac_guitar', label: 'Zac Guitar', group: 'Guitars & Keys' },
 	{ key: 'zac_keys_r', label: 'Zac Keys (R)', group: 'Guitars & Keys' },
 	{ key: 'zac_keys_l', label: 'Zac Keys (L)', group: 'Guitars & Keys' },
