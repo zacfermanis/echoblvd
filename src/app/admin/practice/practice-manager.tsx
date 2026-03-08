@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { PRACTICE_TRACK_DEFS } from '@/app/types/band';
 import type { PracticeSong, PracticeSongTrack, PracticeTake } from '@/app/types/band';
 
@@ -73,32 +73,43 @@ export function PracticeManager({ initialSongs }: Props) {
 						Add First Song
 					</button>
 				</div>
-			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{songs.map((song) => (
-						<div
-							key={song.id}
-							className="group rounded-lg border border-gray-700 bg-gray-800 p-6 flex flex-col gap-3"
+		) : (
+			<div className="rounded-lg border border-gray-700 overflow-hidden divide-y divide-gray-700">
+				{songs.map((song) => (
+					<div key={song.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-800/60 transition-colors">
+					{/* Song info */}
+					<div className="flex-1 min-w-0">
+						<span className="font-medium text-white text-sm">{song.title}</span>
+						<span className="ml-2 text-gray-500 text-sm">{song.artist}</span>
+					</div>
+
+					{/* Track count */}
+					<span className="text-xs text-gray-600 shrink-0">
+						{song.tracks.length} tracks
+					</span>
+
+					{/* Original + takes buttons */}
+					<div className="flex items-center gap-1.5 shrink-0">
+						<Link
+							href={`/admin/practice/${song.id}`}
+							className="rounded-md bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 text-sm font-medium transition-colors"
 						>
-							<div>
-								<h3 className="text-lg font-semibold text-white leading-tight">
-									{song.title}
-								</h3>
-								<p className="text-gray-400 text-sm mt-0.5">{song.artist}</p>
-							</div>
-
-							<TrackStatusBar tracks={song.tracks} disabledTracks={song.disabledTracks ?? []} />
-
+							Original
+						</Link>
+						{song.takes?.map((take) => (
 							<Link
-								href={`/admin/practice/${song.id}`}
-								className="mt-auto rounded-md bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 text-sm font-medium transition-colors text-center block"
+								key={take.id}
+								href={`/admin/practice/${song.id}?takeId=${take.id}`}
+								className="rounded-md border border-gray-600 text-gray-300 hover:border-indigo-500 hover:text-indigo-300 px-3 py-1.5 text-sm font-medium transition-colors"
 							>
-								Load Song
+								{take.name}
 							</Link>
-						</div>
-					))}
-				</div>
-			)}
+						))}
+					</div>
+					</div>
+				))}
+			</div>
+		)}
 		</div>
 	);
 }
@@ -401,6 +412,8 @@ function SongTrackManager({
 	const [showHidden, setShowHidden] = useState(false);
 	const [isAddingTake, setIsAddingTake] = useState(false);
 	const [deleteTakeConfirm, setDeleteTakeConfirm] = useState<PracticeTake | null>(null);
+	const [renamingTakeId, setRenamingTakeId] = useState<string | null>(null);
+	const [renameValue, setRenameValue] = useState('');
 
 	const effectiveTracks =
 		selectedTakeId != null && (song.takes?.length ?? 0) > 0
@@ -464,6 +477,30 @@ function SongTrackManager({
 		}
 	}
 
+	async function renameTake(take: PracticeTake, newName: string) {
+		setRenamingTakeId(null);
+		const trimmed = newName.trim();
+		if (!trimmed || trimmed === take.name) return;
+		try {
+			const res = await fetch('/api/admin/practice/takes', {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ id: take.id, name: trimmed }),
+			});
+			if (!res.ok) throw new Error('Failed to rename take');
+			const updated = (await res.json()) as PracticeTake;
+			onTrackChange({
+				...song,
+				takes: (song.takes ?? []).map((t) =>
+					t.id === take.id ? { ...t, name: updated.name } : t,
+				),
+			});
+			showToast(`Renamed to "${updated.name}"`);
+		} catch {
+			showToast('Failed to rename take', 'error');
+		}
+	}
+
 	async function persistDisabled(newDisabled: string[]) {
 		try {
 			const res = await fetch(`/api/admin/practice/songs?id=${song.id}`, {
@@ -522,6 +559,26 @@ function SongTrackManager({
 				</button>
 			</div>
 
+			{/* Collapsed takes pills — click to expand directly into that take */}
+			{!isExpanded && (song.takes?.length ?? 0) > 0 && (
+				<div className="px-6 pb-3 flex flex-wrap items-center gap-2">
+					<span className="text-xs text-gray-600 shrink-0">Takes:</span>
+					{song.takes!.map((take) => (
+						<button
+							key={take.id}
+							type="button"
+							onClick={() => {
+								setSelectedTakeId(take.id);
+								onToggle();
+							}}
+							className="text-xs px-2.5 py-1 rounded-full border border-gray-600 text-gray-400 hover:border-indigo-500 hover:text-indigo-300 transition-colors"
+						>
+							{take.name}
+						</button>
+					))}
+				</div>
+			)}
+
 			{/* Track upload slots */}
 			{isExpanded && (
 				<div className="border-t border-gray-700 divide-y divide-gray-700/60">
@@ -537,31 +594,51 @@ function SongTrackManager({
 						>
 							Original
 						</button>
-						{(song.takes ?? []).map((take) => (
-							<span key={take.id} className="inline-flex items-center gap-1">
-								<button
-									type="button"
-									onClick={() => setSelectedTakeId(take.id)}
-									className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
-										selectedTakeId === take.id ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300' : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
-									}`}
-								>
-									{take.name}
-								</button>
-								<button
-									type="button"
-									onClick={(e) => {
-										e.stopPropagation();
-										setDeleteTakeConfirm(take);
-									}}
-									title={`Delete take "${take.name}"`}
-									className="text-xs p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
-									aria-label={`Delete take ${take.name}`}
-								>
-									×
-								</button>
-							</span>
-						))}
+					{(song.takes ?? []).map((take) => (
+						<span key={take.id} className="inline-flex items-center gap-0.5">
+							{renamingTakeId === take.id ? (
+								<RenameInput
+									value={renameValue}
+									onChange={setRenameValue}
+									onCommit={() => void renameTake(take, renameValue)}
+									onCancel={() => setRenamingTakeId(null)}
+								/>
+							) : (
+								<>
+									<button
+										type="button"
+										onClick={() => setSelectedTakeId(take.id)}
+										className={`text-xs px-3 py-1.5 rounded border font-medium transition-colors ${
+											selectedTakeId === take.id ? 'border-indigo-500 bg-indigo-500/20 text-indigo-300' : 'border-gray-600 text-gray-400 hover:border-gray-400 hover:text-white'
+										}`}
+									>
+										{take.name}
+									</button>
+									<button
+										type="button"
+										onClick={() => { setRenamingTakeId(take.id); setRenameValue(take.name); }}
+										title="Rename take"
+										className="text-xs p-1 rounded text-gray-600 hover:text-gray-300 transition-colors"
+										aria-label={`Rename take ${take.name}`}
+									>
+										✎
+									</button>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											setDeleteTakeConfirm(take);
+										}}
+										title={`Delete take "${take.name}"`}
+										className="text-xs p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-950/40 transition-colors"
+										aria-label={`Delete take ${take.name}`}
+									>
+										×
+									</button>
+								</>
+							)}
+						</span>
+					))}
 						<button
 							type="button"
 							onClick={() => void handleAddTake()}
@@ -625,6 +702,43 @@ function SongTrackManager({
 				</div>
 			)}
 		</div>
+	);
+}
+
+// ─────────────────────────────────────────────────────────────
+// RenameInput — inline text input for renaming a take
+// ─────────────────────────────────────────────────────────────
+
+interface RenameInputProps {
+	value: string;
+	onChange: (v: string) => void;
+	onCommit: () => void;
+	onCancel: () => void;
+}
+
+function RenameInput({ value, onChange, onCommit, onCancel }: RenameInputProps) {
+	const inputRef = useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		inputRef.current?.focus();
+		inputRef.current?.select();
+	}, []);
+
+	return (
+		<input
+			ref={inputRef}
+			type="text"
+			value={value}
+			onChange={(e) => onChange(e.target.value)}
+			onBlur={onCommit}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter') onCommit();
+				if (e.key === 'Escape') onCancel();
+			}}
+			aria-label="Take name"
+			placeholder="Take name"
+			className="text-xs px-2 py-1.5 rounded border border-indigo-500 bg-gray-900 text-white w-32 focus:outline-none"
+		/>
 	);
 }
 

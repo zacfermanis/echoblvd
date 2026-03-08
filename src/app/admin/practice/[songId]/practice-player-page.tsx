@@ -8,11 +8,12 @@ import { PracticePlayer } from '../practice-player';
 interface Props {
 	song: PracticeSong;
 	initialStreamUrls: Record<string, string>;
+	initialTakeId?: string | null;
 }
 
-export function PracticePlayerPage({ song, initialStreamUrls }: Props) {
+export function PracticePlayerPage({ song, initialStreamUrls, initialTakeId }: Props) {
 	const router = useRouter();
-	const [currentTakeId, setCurrentTakeId] = useState<string | null>(null);
+	const [currentTakeId, setCurrentTakeId] = useState<string | null>(initialTakeId ?? null);
 	const [streamUrls, setStreamUrls] = useState<Record<string, string>>(initialStreamUrls);
 
 	const hasTakes = (song.takes?.length ?? 0) > 0;

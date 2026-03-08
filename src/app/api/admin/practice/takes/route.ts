@@ -57,6 +57,40 @@ export async function POST(request: Request) {
 	}
 }
 
+/** Rename a take. Body: { id, name } */
+export async function PATCH(request: Request) {
+	try {
+		await assertAuthenticated();
+		const body = (await request.json()) as { id?: string; name?: string };
+		const { id, name } = body;
+		if (!id || !name?.trim()) {
+			return NextResponse.json({ error: 'id and name are required' }, { status: 400 });
+		}
+
+		const supabase = getSupabaseServiceClient();
+		const { data: row, error } = await supabase
+			.from('practice_song_takes')
+			.update({ name: name.trim().slice(0, 200) })
+			.eq('id', id)
+			.select('id, song_id, name, created_at')
+			.single();
+
+		if (error) throw error;
+
+		const take: PracticeTake = {
+			id: (row as TakeRow).id,
+			songId: (row as TakeRow).song_id,
+			name: (row as TakeRow).name,
+			createdAt: (row as TakeRow).created_at,
+			tracks: [],
+		};
+		return NextResponse.json(take);
+	} catch (error: unknown) {
+		const status = (error as { status?: number }).status ?? 500;
+		return NextResponse.json({ error: 'Failed to rename take' }, { status });
+	}
+}
+
 /** Delete a take and all its tracks (and their R2 objects). */
 export async function DELETE(request: Request) {
 	try {
