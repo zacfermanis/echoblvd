@@ -15,7 +15,7 @@ export function HeroSection() {
         </div>
         
         <p className="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto">
-          A dynamic rock band creating powerful, melodic music that resonates with raw emotion and authentic energy
+          Delivering the biggest rock anthems of the &apos;90s and &apos;00s with raw energy and unmistakable stage presence
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
