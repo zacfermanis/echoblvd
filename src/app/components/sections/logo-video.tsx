@@ -45,7 +45,7 @@ export function LogoVideo() {
         }`}
         onEnded={() => setVideoEnded(true)}
       >
-        <source src="/EchoBlvd_1.mp4" type="video/mp4" />
+        <source src="https://8seirfiyslx0jmio.public.blob.vercel-storage.com/EchoBlvd_1.mp4" type="video/mp4" />
       </video>
 
       {/* Play again button — appears after video ends */}
