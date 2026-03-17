@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { LogoVideo } from './logo-video';
 
 export function HeroSection() {
   return (
@@ -9,16 +9,9 @@ export function HeroSection() {
       
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <div className="mb-8 flex justify-center">
-          <Image
-            src="/Echo Blvd Logo.svg"
-            alt="Echo Blvd Logo"
-            width={300}
-            height={400}
-            className="w-48 h-64 sm:w-64 sm:h-80 lg:w-80 lg:h-96"
-            priority
-          />
+        {/* Logo / video intro */}
+        <div className="flex justify-center">
+          <LogoVideo />
         </div>
         
         <p className="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto">
