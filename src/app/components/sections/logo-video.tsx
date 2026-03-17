@@ -43,6 +43,10 @@ export function LogoVideo() {
         className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 ease-in-out ${
           videoEnded ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
+        onPlaying={(e) => {
+          const vid = e.currentTarget;
+          vid.muted = false;
+        }}
         onEnded={() => setVideoEnded(true)}
       >
         <source src="https://8seirfiyslx0jmio.public.blob.vercel-storage.com/EchoBlvd_1.mp4" type="video/mp4" />
