@@ -33,6 +33,19 @@ export function LogoVideo() {
           : 'w-full max-w-4xl mb-0'
       }`}
     >
+      {/* Small logo above video during playback */}
+      <div className={`flex justify-center transition-all duration-1000 ease-in-out ${
+        videoEnded ? 'h-0 opacity-0 mb-0' : 'h-16 sm:h-20 opacity-100 mb-4'
+      }`}>
+        <Image
+          src="/Echo Blvd Logo.svg"
+          alt="Echo Blvd"
+          width={80}
+          height={80}
+          className="object-contain h-full w-auto"
+        />
+      </div>
+
       {/* Aspect-ratio wrapper — landscape while video plays, portrait for logo */}
       <div className={`relative transition-all duration-1000 ease-in-out ${
         videoEnded ? 'aspect-[3/4]' : 'aspect-video'
