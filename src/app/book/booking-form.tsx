@@ -50,21 +50,6 @@ export function BookingForm() {
       return;
     }
 
-    const composedMessage = [
-      `Event Type: ${form.eventType}`,
-      `Event Date: ${form.eventDate}`,
-      `Location: ${form.location}`,
-      form.guestCount ? `Guest Count: ${form.guestCount}` : null,
-      form.indoorOutdoor ? `Indoor/Outdoor: ${form.indoorOutdoor}` : null,
-      form.powerAvailable ? `Power Available: ${form.powerAvailable}` : null,
-      form.budgetRange ? `Budget Range: ${form.budgetRange}` : null,
-      "",
-      "Additional Details:",
-      form.message || "(none provided)",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
@@ -72,7 +57,16 @@ export function BookingForm() {
         body: JSON.stringify({
           name: form.name,
           email: form.email,
-          message: composedMessage,
+          // Booking submissions should be structured fields (no `message:` key),
+          // so the email renderer can omit it and show labeled event info instead.
+          eventDate: form.eventDate,
+          eventType: form.eventType,
+          location: form.location,
+          guestCount: form.guestCount || undefined,
+          indoorOutdoor: form.indoorOutdoor || undefined,
+          powerAvailable: form.powerAvailable || undefined,
+          budgetRange: form.budgetRange || undefined,
+          additionalDetails: form.message || undefined,
         }),
       });
 
