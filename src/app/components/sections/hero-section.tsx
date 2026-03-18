@@ -30,7 +30,7 @@ export function HeroSection() {
           </Link>
 
           <Link
-            href="/social"
+            href="/shows"
             className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-black transition-colors duration-200"
           >
             Watch Live
