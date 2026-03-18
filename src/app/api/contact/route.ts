@@ -90,10 +90,12 @@ export async function POST(req: NextRequest) {
 
     const commonFrom = `Echo Blvd Website <${process.env.GMAIL_USER}>`;
 
-    const mailOptions = {
+    const mailOptions: nodemailer.SendMailOptions = {
       from: commonFrom,
       to: 'booking@echoblvd.com',
       replyTo: email,
+      subject: '',
+      text: '',
     };
 
     if (isBooking) {
