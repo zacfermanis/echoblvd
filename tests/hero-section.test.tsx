@@ -7,15 +7,19 @@ describe('HeroSection', () => {
     expect(screen.getByAltText('Echo Blvd Logo')).toBeInTheDocument();
   });
 
-  it('renders the band description', () => {
+  it('renders the event-focused band description', () => {
     render(<HeroSection />);
-    expect(screen.getByText(/A dynamic rock band creating powerful, melodic music/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Echo Blvd is a high-energy live rock band based in the Raleigh-Durham area, available for private parties, corporate events, breweries, festivals, and community events./
+      )
+    ).toBeInTheDocument();
   });
 
   it('renders call-to-action buttons', () => {
     render(<HeroSection />);
-    expect(screen.getByText('Listen Now')).toBeInTheDocument();
-    expect(screen.getByText('See Shows')).toBeInTheDocument();
+    expect(screen.getByText('Book Echo Blvd')).toBeInTheDocument();
+    expect(screen.getByText('Watch Live')).toBeInTheDocument();
   });
 
   it('renders social media links with correct URLs', () => {

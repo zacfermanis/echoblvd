@@ -39,7 +39,7 @@ describe('Contact API Route', () => {
     const formatEmailContent = (name: string, email: string, message: string) => {
       return {
         from: 'Echo Blvd Website <test@gmail.com>',
-        to: 'echoblvdband@gmail.com',
+        to: 'booking@echoblvd.com',
         subject: `New Contact Form Submission from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
         replyTo: email
@@ -50,7 +50,7 @@ describe('Contact API Route', () => {
     
     expect(result).toEqual({
       from: 'Echo Blvd Website <test@gmail.com>',
-      to: 'echoblvdband@gmail.com',
+      to: 'booking@echoblvd.com',
       subject: 'New Contact Form Submission from John Doe',
       text: 'Name: John Doe\nEmail: john@example.com\nMessage:\nHello from John',
       replyTo: 'john@example.com'
@@ -61,7 +61,7 @@ describe('Contact API Route', () => {
     const formatEmailContent = (name: string, email: string, message: string) => {
       return {
         from: 'Echo Blvd Website <test@gmail.com>',
-        to: 'echoblvdband@gmail.com',
+        to: 'booking@echoblvd.com',
         subject: `New Contact Form Submission from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
         replyTo: email
@@ -72,7 +72,7 @@ describe('Contact API Route', () => {
     
     expect(result).toEqual({
       from: 'Echo Blvd Website <test@gmail.com>',
-      to: 'echoblvdband@gmail.com',
+      to: 'booking@echoblvd.com',
       subject: 'New Contact Form Submission from José María',
       text: 'Name: José María\nEmail: jose@example.com\nMessage:\nHello! This is a test message with special chars: áéíóúñ',
       replyTo: 'jose@example.com'
@@ -83,7 +83,7 @@ describe('Contact API Route', () => {
     const formatEmailContent = (name: string, email: string, message: string) => {
       return {
         from: 'Echo Blvd Website <test@gmail.com>',
-        to: 'echoblvdband@gmail.com',
+        to: 'booking@echoblvd.com',
         subject: `New Contact Form Submission from ${name}`,
         text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
         replyTo: email

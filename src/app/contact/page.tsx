@@ -3,7 +3,8 @@ import { ContactForm } from './contact-form';
 
 export const metadata: Metadata = {
   title: 'Contact - Echo Blvd',
-  description: 'Get in touch with Echo Blvd for bookings, press inquiries, or just to say hello.',
+  description:
+    'Get in touch with Echo Blvd for general questions, press inquiries, or to follow up about a booking.',
 };
 
 export default function ContactPage() {
@@ -14,14 +15,14 @@ export default function ContactPage() {
           Contact
         </h1>
         <p className="text-xl text-gray-300 mb-12">
-          Get in touch with us for bookings, press inquiries, or just to say hello.
+          Get in touch with us for general questions, press inquiries, or to follow up about a booking.
         </p>
         <div className="bg-gray-800 rounded-lg p-8 mb-12">
           <ContactForm />
         </div>
         <div className="bg-gray-800 rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Band Contact Info</h2>
-          <p className="text-gray-300 mb-2">Email: <a href="mailto:echoblvdband@gmail.com" className="text-blue-400 hover:underline">echoblvdband@gmail.com</a></p>
+          <p className="text-gray-300 mb-2">Email: <a href="mailto:booking@echoblvd.com" className="text-blue-400 hover:underline">booking@echoblvd.com</a></p>
           <p className="text-gray-400 mb-6">Follow us on social media:</p>
           <div className="flex justify-center space-x-6">
             <a href="https://www.instagram.com/echoblvdband/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="Instagram">

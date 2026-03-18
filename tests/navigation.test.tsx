@@ -15,6 +15,7 @@ describe('Navigation', () => {
   it('renders all navigation links', () => {
     render(<Navigation />);
     expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByText('Book')).toBeInTheDocument();
     expect(screen.getByText('Music')).toBeInTheDocument();
     expect(screen.getByText('Shows')).toBeInTheDocument();
     expect(screen.getByText('Social')).toBeInTheDocument();

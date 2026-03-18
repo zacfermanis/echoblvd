@@ -12,7 +12,9 @@ describe('ContactPage', () => {
     render(<ContactPage />);
     
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Contact');
-    expect(screen.getByText(/Get in touch with us for bookings/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Get in touch with us for general questions, press inquiries/)
+    ).toBeInTheDocument();
   });
 
   it('renders contact form component', () => {
@@ -25,7 +27,7 @@ describe('ContactPage', () => {
     render(<ContactPage />);
     
     expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Band Contact Info');
-    expect(screen.getByText(/echoblvdband@gmail.com/)).toBeInTheDocument();
+    expect(screen.getByText(/booking@echoblvd.com/)).toBeInTheDocument();
     expect(screen.getByText(/Follow us on social media/)).toBeInTheDocument();
   });
 

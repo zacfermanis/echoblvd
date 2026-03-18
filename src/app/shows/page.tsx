@@ -3,7 +3,8 @@ import { getUpcomingShows } from '@/app/lib/content';
 
 export const metadata: Metadata = {
   title: 'Shows - Echo Blvd',
-  description: 'See Echo Blvd live in concert. Find upcoming tour dates and ticket information.',
+  description:
+    'See where Echo Blvd is playing live around the Triangle and imagine the same energy at your next event.',
 };
 
 export const revalidate = 0;
@@ -28,7 +29,7 @@ export default async function ShowsPage() {
           Shows
         </h1>
         <p className="text-xl text-gray-300 mb-12">
-          Catch us live on tour
+          Catch us live around the Triangle — and picture this same energy at your private party, festival, or corporate event.
         </p>
         {shows.length === 0 ? (
           <div className="bg-gray-800 rounded-lg p-8 text-gray-300">

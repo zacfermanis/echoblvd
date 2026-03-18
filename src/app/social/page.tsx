@@ -5,7 +5,8 @@ import type { InstagramMedia } from '@/app/types/instagram';
 
 export const metadata: Metadata = {
   title: 'Social - Echo Blvd',
-  description: 'Latest Instagram posts from Echo Blvd.',
+  description:
+    'Latest Instagram posts and live clips from Echo Blvd around Raleigh-Durham and beyond.',
 };
 
 function getCaptionText(item: InstagramMedia): string {
@@ -38,7 +39,7 @@ export default async function SocialPage() {
           Social
         </h1>
         <p className="text-xl text-gray-300 mb-8">
-          Latest posts from Instagram
+          Recent Instagram posts and live clips that show what an Echo Blvd show feels like up close.
         </p>
         {posts.length === 0 ? (
           <div className="bg-gray-800 rounded-lg p-8 text-gray-300">

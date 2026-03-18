@@ -16,7 +16,7 @@ describe('SocialPage', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Social');
     expect(
-      screen.getByText(/Latest posts from Instagram/i)
+      screen.getByText(/Recent Instagram posts and live clips/i)
     ).toBeInTheDocument();
   });
 

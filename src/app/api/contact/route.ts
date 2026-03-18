@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const mailOptions = {
       from: `Echo Blvd Website <${process.env.GMAIL_USER}>`,
-      to: 'echoblvdband@gmail.com',
+      to: 'booking@echoblvd.com',
       subject: `New Contact Form Submission from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
       replyTo: email,

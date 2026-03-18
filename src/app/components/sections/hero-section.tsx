@@ -6,34 +6,37 @@ export function HeroSection() {
     <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-black">
       {/* Background overlay */}
       <div className="absolute inset-0 bg-black/50"></div>
-      
+
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
         {/* Logo / video intro */}
         <div className="flex justify-center">
           <LogoVideo />
         </div>
-        
-        <p className="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-300 max-w-2xl mx-auto">
-          Delivering the biggest rock anthems of the &apos;90s and &apos;00s with raw energy and unmistakable stage presence
+
+        <p className="text-lg sm:text-xl lg:text-2xl mb-4 text-gray-100 max-w-3xl mx-auto">
+          Echo Blvd is a high-energy live rock band based in the Raleigh-Durham area, available for private parties, corporate events, breweries, festivals, and community events.
         </p>
-        
+        <p className="text-base sm:text-lg lg:text-xl mb-8 text-gray-300 max-w-3xl mx-auto">
+          Professional sound and lighting, a polished yet crowd-friendly setlist of &apos;90s and &apos;00s rock favorites, and an easy, reliable booking experience.
+        </p>
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <Link
-            href="/music"
+            href="/book"
             className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition-colors duration-200"
           >
-            Listen Now
+            Book Echo Blvd
           </Link>
-          
+
           <Link
-            href="/shows"
+            href="/social"
             className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-black transition-colors duration-200"
           >
-            See Shows
+            Watch Live
           </Link>
         </div>
-        
+
         {/* Social links */}
         <div className="mt-12 flex justify-center space-x-6">
           <a

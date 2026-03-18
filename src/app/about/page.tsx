@@ -3,7 +3,8 @@ import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'About - Echo Blvd',
-  description: 'Learn more about Echo Blvd, our story, and band members.',
+  description:
+    'Learn more about Echo Blvd, a high-energy Raleigh/Durham rock band available for private parties, corporate events, breweries, festivals, and community events.',
 };
 
 export default function AboutPage() {
@@ -29,8 +30,11 @@ export default function AboutPage() {
             />
           </div>
           <div className="bg-gray-800 rounded-lg p-8">
-            <p className="text-gray-200 leading-relaxed text-lg">
-              Echo Blvd is a Raleigh/Durham rock band with classic swagger and alt-rock grit. Boston’s Zac Fermanis fronts local vets Tom Kuhn, Jeremy Buenviaje, and Scott Little. From club to party, they bring tight grooves, raw vocals, and serious energy.
+            <p className="text-gray-200 leading-relaxed text-lg mb-4">
+              Echo Blvd is a Raleigh/Durham rock band built around big &apos;90s and &apos;00s rock anthems, tight grooves, and a high-energy live show. Boston’s Zac Fermanis fronts local vets Tom Kuhn, Jeremy Buenviaje, and Scott Little.
+            </p>
+            <p className="text-gray-300 leading-relaxed text-base">
+              The band plays bars, breweries, and stages around the Triangle, and is also available for private parties, corporate events, neighborhood gatherings, festivals, and other community events. Echo Blvd combines a polished, crowd-friendly set with professional sound, lighting, and an easy, event-focused approach to working with hosts, venues, and planners.
             </p>
           </div>
         </div>
