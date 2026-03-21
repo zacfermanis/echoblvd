@@ -24,17 +24,46 @@ export async function getShows(): Promise<Show[]> {
       return [];
     }
 
-    return (data ?? []).map(row => ({
-      id: row.id as string,
-      date: row.date as string,
-      venue: row.venue as string,
-      city: row.city as string,
-      country: row.country as string,
-      isUpcoming: Boolean((row as { is_upcoming?: unknown }).is_upcoming),
-      description: (row as { description?: string }).description,
-      startTime: (row as { start_time?: string }).start_time ? (row as { start_time?: string }).start_time!.slice(0,5) : undefined,
-      endTime: (row as { end_time?: string }).end_time ? (row as { end_time?: string }).end_time!.slice(0,5) : undefined,
-    }));
+    return (data ?? []).map(row => mapShowRow(row as Record<string, unknown>));
+  } catch {
+    return [];
+  }
+}
+
+function mapShowRow(row: Record<string, unknown>): Show {
+  return {
+    id: row.id as string,
+    date: row.date as string,
+    venue: row.venue as string,
+    city: row.city as string,
+    country: row.country as string,
+    isUpcoming: Boolean((row as { is_upcoming?: unknown }).is_upcoming),
+    description: (row as { description?: string }).description,
+    startTime: (row as { start_time?: string }).start_time
+      ? (row as { start_time?: string }).start_time!.slice(0, 5)
+      : undefined,
+    endTime: (row as { end_time?: string }).end_time
+      ? (row as { end_time?: string }).end_time!.slice(0, 5)
+      : undefined,
+  };
+}
+
+export async function getPreviousShows(): Promise<Show[]> {
+  try {
+    const supabase = getSupabaseServerClient();
+    const nowIso = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('shows')
+      .select('id, date, venue, city, country, is_upcoming, description, start_time, end_time')
+      .lt('date', nowIso)
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Supabase getPreviousShows error:', error.message);
+      return [];
+    }
+
+    return (data ?? []).map(row => mapShowRow(row as Record<string, unknown>));
   } catch {
     return [];
   }
@@ -75,17 +104,7 @@ export async function getUpcomingShows(): Promise<Show[]> {
       return [];
     }
 
-    return (data ?? []).map(row => ({
-      id: row.id as string,
-      date: row.date as string,
-      venue: row.venue as string,
-      city: row.city as string,
-      country: row.country as string,
-      isUpcoming: Boolean((row as { is_upcoming?: unknown }).is_upcoming),
-      description: (row as { description?: string }).description,
-      startTime: (row as { start_time?: string }).start_time ? (row as { start_time?: string }).start_time!.slice(0,5) : undefined,
-      endTime: (row as { end_time?: string }).end_time ? (row as { end_time?: string }).end_time!.slice(0,5) : undefined,
-    }));
+    return (data ?? []).map(row => mapShowRow(row as Record<string, unknown>));
   } catch {
     return [];
   }
