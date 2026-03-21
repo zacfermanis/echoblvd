@@ -115,14 +115,31 @@ export async function getFeaturedTracks(): Promise<Track[]> {
   return tracks.filter(track => track.featured);
 }
 
+/** Interprets show `date` as a calendar day (not UTC midnight) so en-US locales don't shift by one day. */
+function calendarDateFromShowField(dateString: string): Date {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateString);
+  if (m) {
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+    const local = new Date(y, mo - 1, d);
+    if (!Number.isNaN(local.getTime())) return local;
+  }
+  return new Date(dateString);
+}
+
+/** Short date for lists (matches prior `toLocaleDateString('en-US')` output, without UTC shift). */
+export function formatShowCalendarDate(dateString: string): string {
+  return calendarDateFromShowField(dateString).toLocaleDateString('en-US');
+}
+
 export function formatShowDate(dateString: string): string {
-  const date = new Date(dateString);
   return new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
-  }).format(date);
+  }).format(calendarDateFromShowField(dateString));
 }
 
 export function formatTrackDuration(seconds: number): string {
