@@ -6,6 +6,11 @@ export interface AmbientPhotoBackgroundProps {
   alt?: string;
   priority?: boolean;
   overlay?: 'light' | 'medium' | 'heavy';
+  /**
+   * Show only the bottom portion of the image (top is clipped). E.g. `2/3` keeps the lower two-thirds
+   * — useful when the top of the frame has unwanted elements (screens, ceiling).
+   */
+  visibleImageHeightFraction?: number;
 }
 
 const overlayGradients: Record<NonNullable<AmbientPhotoBackgroundProps['overlay']>, string> = {
@@ -26,21 +31,42 @@ export function AmbientPhotoBackground({
   alt = '',
   priority = false,
   overlay = 'medium',
+  visibleImageHeightFraction,
 }: AmbientPhotoBackgroundProps) {
+  const fraction =
+    visibleImageHeightFraction !== undefined &&
+    visibleImageHeightFraction > 0 &&
+    visibleImageHeightFraction <= 1
+      ? visibleImageHeightFraction
+      : null;
+
+  const imageNode = (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      priority={priority}
+      className="object-cover object-center"
+      sizes="100vw"
+      quality={82}
+    />
+  );
+
   return (
     <div
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
       aria-hidden
     >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        priority={priority}
-        className="object-cover object-center"
-        sizes="100vw"
-        quality={82}
-      />
+      {fraction !== null ? (
+        <div
+          className="absolute bottom-0 left-0 right-0 overflow-hidden"
+          style={{ height: `${(100 / fraction).toFixed(4)}%` }}
+        >
+          {imageNode}
+        </div>
+      ) : (
+        imageNode
+      )}
       <div
         className={`absolute inset-0 ${overlayGradients[overlay]}`}
       />

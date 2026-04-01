@@ -40,7 +40,11 @@ export default async function SocialPage() {
 
   return (
     <div className="relative min-h-screen text-white pt-16">
-      <AmbientPhotoBackground src={pageBackgrounds.social} overlay="heavy" />
+      <AmbientPhotoBackground
+        src={pageBackgrounds.social}
+        overlay="heavy"
+        visibleImageHeightFraction={2 / 3}
+      />
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-4">
           Social
@@ -53,17 +57,17 @@ export default async function SocialPage() {
             No Instagram posts available yet.
           </div>
         ) : (
-          <div className="h-[calc(100vh-14rem)] overflow-y-scroll snap-y snap-mandatory rounded-2xl border border-white/15 bg-black/35 backdrop-blur-sm shadow-2xl">
+          <div className="h-[calc(100dvh-6rem)] overflow-y-scroll snap-y snap-mandatory rounded-2xl border border-white/15 bg-black/35 backdrop-blur-sm shadow-2xl">
             {posts.map((item) => (
               <article
                 key={item.id}
                 data-testid="instagram-feed-item"
-                className="snap-start min-h-[calc(100vh-14rem)] flex flex-col bg-black/30"
+                className="snap-start min-h-[calc(100dvh-6rem)] flex flex-col bg-black/30"
               >
-                <div className="relative flex-1">
+                <div className="relative min-h-[min(58vh,520px)] flex-1 bg-black">
                   {item.mediaType === 'VIDEO' ? (
                     <video
-                      className="absolute inset-0 h-full w-full object-cover"
+                      className="absolute inset-0 h-full w-full object-contain"
                       controls
                       playsInline
                       preload="metadata"
@@ -77,12 +81,12 @@ export default async function SocialPage() {
                       alt={getCaptionText(item)}
                       fill
                       sizes="(max-width: 768px) 100vw, 80vw"
-                      className="object-cover"
+                      className="object-contain"
                       priority={false}
                     />
                   )}
                 </div>
-                <div className="bg-gray-900/90 px-6 py-5 space-y-3">
+                <div className="shrink-0 bg-gray-900/90 px-6 py-5 space-y-3">
                   <div className="flex items-center justify-between text-sm text-gray-400">
                     <span>{item.username ?? 'Echo Blvd'}</span>
                     <span>{getTimestampLabel(item.timestamp)}</span>

@@ -10,7 +10,7 @@ export const pageBackgrounds = {
   book: publicImage('20260331-Echo Blvd 40.jpg'),
   music: publicImage('20260331-Echo blvd bass photo.jpg'),
   shows: publicImage('20260331-Echo Blvd 9.jpg'),
-  social: publicImage('20260331-Echo Blvd 28.jpg'),
+  social: publicImage('20260331-Echo Blvd 53.jpg'),
   about: publicImage('20260331-Arboretum with Rin 17.jpg'),
   contact: publicImage('20260331-Echo Blvd 26.jpg'),
 } as const;
