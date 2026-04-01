@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 import { ContactForm } from './contact-form';
 
 export const metadata: Metadata = {
@@ -9,18 +11,19 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="relative min-h-screen text-white">
+      <AmbientPhotoBackground src={pageBackgrounds.contact} overlay="light" />
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-8">
           Contact
         </h1>
         <p className="text-xl text-gray-300 mb-12">
           Get in touch with us for general questions, press inquiries, or to follow up about a booking.
         </p>
-        <div className="bg-gray-800 rounded-lg p-8 mb-12">
+        <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-8 mb-12 border border-white/10">
           <ContactForm />
         </div>
-        <div className="bg-gray-800 rounded-lg p-8 text-center">
+        <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-8 text-center border border-white/10">
           <h2 className="text-2xl font-bold text-white mb-4">Band Contact Info</h2>
           <p className="text-gray-300 mb-2">Email: <a href="mailto:booking@echoblvd.com" className="text-blue-400 hover:underline">booking@echoblvd.com</a></p>
           <p className="text-gray-400 mb-6">Follow us on social media:</p>

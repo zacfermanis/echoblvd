@@ -5,6 +5,8 @@ import {
   getPreviousShows,
   getUpcomingShows,
 } from '@/app/lib/content';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 
 export const metadata: Metadata = {
   title: 'Shows - Echo Blvd',
@@ -26,7 +28,7 @@ function formatTime12h(time: string): string {
 
 function ShowList({ shows }: { shows: Show[] }) {
   return (
-    <div className="bg-gray-800 rounded-lg divide-y divide-gray-700">
+    <div className="bg-gray-900/65 backdrop-blur-sm rounded-lg divide-y divide-white/10 border border-white/5">
       {shows.map(show => (
         <div key={show.id} className="p-6 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -60,8 +62,9 @@ export default async function ShowsPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="relative min-h-screen text-white">
+      <AmbientPhotoBackground src={pageBackgrounds.shows} overlay="medium" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-8">
           Shows
         </h1>
@@ -69,7 +72,7 @@ export default async function ShowsPage() {
           Catch us live around the Triangle!
         </p>
         {shows.length === 0 ? (
-          <div className="bg-gray-800 rounded-lg p-8 text-gray-300">
+          <div className="bg-gray-900/65 backdrop-blur-sm rounded-lg p-8 text-gray-300 border border-white/5">
             No upcoming shows yet. Check back soon!
           </div>
         ) : (
@@ -87,7 +90,7 @@ export default async function ShowsPage() {
             Where we&apos;ve played recently.
           </p>
           {previousShows.length === 0 ? (
-            <div className="bg-gray-800/80 rounded-lg p-8 text-gray-400 border border-gray-700/50">
+            <div className="bg-gray-900/60 backdrop-blur-sm rounded-lg p-8 text-gray-400 border border-white/5">
               Past dates will appear here after your gigs.
             </div>
           ) : (

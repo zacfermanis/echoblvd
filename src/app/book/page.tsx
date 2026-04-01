@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 import { BookingForm } from './booking-form';
 
 export const metadata: Metadata = {
@@ -9,8 +11,9 @@ export const metadata: Metadata = {
 
 export default function BookPage() {
   return (
-    <div className="min-h-screen bg-gray-900 pt-20 pb-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="relative min-h-screen text-white pt-20 pb-16">
+      <AmbientPhotoBackground src={pageBackgrounds.book} overlay="medium" />
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           <div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
@@ -93,7 +96,7 @@ export default function BookPage() {
             </div>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 sm:p-8 shadow-lg">
+          <div className="bg-gray-900/75 backdrop-blur-md rounded-lg p-6 sm:p-8 shadow-xl border border-white/10">
             <h2 className="text-2xl font-semibold text-white mb-4">
               Check availability &amp; request a quote
             </h2>

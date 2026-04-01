@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 
 export const metadata: Metadata = {
   title: 'About - Echo Blvd',
@@ -9,8 +11,9 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="relative min-h-screen text-white">
+      <AmbientPhotoBackground src={pageBackgrounds.about} overlay="medium" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-8">
           About
         </h1>
@@ -19,7 +22,7 @@ export default function AboutPage() {
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <div className="bg-gray-800 rounded-lg p-2">
+          <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-2 border border-white/10">
             <Image
               src="/echo_blvd_about_map.png"
               alt="Echo Blvd about page map artwork"
@@ -29,7 +32,7 @@ export default function AboutPage() {
               sizes="(min-width: 1024px) 50vw, 100vw"
             />
           </div>
-          <div className="bg-gray-800 rounded-lg p-8">
+          <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-8 border border-white/10">
             <p className="text-gray-200 leading-relaxed text-lg mb-4">
               Echo Blvd is a Raleigh/Durham rock band built around big &apos;90s and &apos;00s rock anthems, tight grooves, and a high-energy live show. Boston’s Zac Fermanis fronts local vets Tom Kuhn, Jeremy Buenviaje, and Scott Little.
             </p>

@@ -3,9 +3,8 @@ import { LogoVideo } from './logo-video';
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-black">
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-black/50"></div>
+    <section className="relative z-10 min-h-screen flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/45" />
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">

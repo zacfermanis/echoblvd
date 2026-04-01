@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 
 export const metadata: Metadata = {
   title: 'Music - Echo Blvd',
@@ -7,8 +9,9 @@ export const metadata: Metadata = {
 
 export default function MusicPage() {
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="relative min-h-screen text-white">
+      <AmbientPhotoBackground src={pageBackgrounds.music} overlay="medium" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-8">
           Music
         </h1>
@@ -131,7 +134,7 @@ export default function MusicPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Track Card 1 - Shimmer */}
-            <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-lg p-6 border border-white/5 hover:bg-gray-900/80 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Shimmer</h3>
               <p className="text-gray-400 mb-4">Fuel Cover - Latest Release</p>
               <a 
@@ -145,7 +148,7 @@ export default function MusicPage() {
             </div>
             
             {/* Track Card 2 - Interstate Love Song */}
-            <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-lg p-6 border border-white/5 hover:bg-gray-900/80 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Interstate Love Song</h3>
               <p className="text-gray-400 mb-4">Stone Temple Pilots Cover</p>
               <a 
@@ -159,7 +162,7 @@ export default function MusicPage() {
             </div>
             
             {/* Track Card 3 - Live Performances */}
-            <div className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-lg p-6 border border-white/5 hover:bg-gray-900/80 transition-colors">
               <h3 className="text-xl font-semibold text-white mb-2">Live Performances</h3>
               <p className="text-gray-400 mb-4">Check out our live shows</p>
               <a href="/shows" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors inline-block">
@@ -170,7 +173,7 @@ export default function MusicPage() {
         </div>
         
         {/* Social Media Links */}
-        <div className="bg-gray-800 rounded-lg p-8 text-center">
+        <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-8 text-center border border-white/10">
           <h2 className="text-2xl font-bold text-white mb-4">Follow Echo Blvd</h2>
           <p className="text-gray-400 mb-6">
             Stay updated with our latest music and shows

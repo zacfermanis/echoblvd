@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
+import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 import { getInstagramFeed } from '@/app/lib/instagram';
 import type { InstagramMedia } from '@/app/types/instagram';
 
@@ -33,8 +35,9 @@ export default async function SocialPage() {
   const posts = await getInstagramFeed({ limit: 12 });
 
   return (
-    <div className="min-h-screen bg-gray-900 pt-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="relative min-h-screen text-white pt-16">
+      <AmbientPhotoBackground src={pageBackgrounds.social} overlay="heavy" />
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-4xl sm:text-6xl font-bold text-white mb-4">
           Social
         </h1>
@@ -42,11 +45,11 @@ export default async function SocialPage() {
           Recent Instagram posts and live clips that show what an Echo Blvd show feels like up close.
         </p>
         {posts.length === 0 ? (
-          <div className="bg-gray-800 rounded-lg p-8 text-gray-300">
+          <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-8 text-gray-300 border border-white/10">
             No Instagram posts available yet.
           </div>
         ) : (
-          <div className="h-[calc(100vh-14rem)] overflow-y-scroll snap-y snap-mandatory rounded-2xl border border-gray-800">
+          <div className="h-[calc(100vh-14rem)] overflow-y-scroll snap-y snap-mandatory rounded-2xl border border-white/15 bg-black/35 backdrop-blur-sm shadow-2xl">
             {posts.map((item) => (
               <article
                 key={item.id}

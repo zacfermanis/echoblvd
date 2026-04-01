@@ -1,12 +1,19 @@
 import { HeroSection } from './components/sections/hero-section';
+import { AmbientPhotoBackground } from './components/layout/ambient-photo-background';
+import { pageBackgrounds } from './lib/page-backgrounds';
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="bg-gray-900 min-h-screen">
+    <div className="relative min-h-screen text-white">
+      <AmbientPhotoBackground
+        src={pageBackgrounds.home}
+        priority
+        overlay="medium"
+      />
       <HeroSection />
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <section className="mt-12 sm:mt-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
             Available for private events
@@ -16,26 +23,26 @@ export default function Home() {
             private and public events across the Triangle.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-gray-200 text-sm">
-            <div className="bg-gray-800/70 rounded-md px-4 py-3">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-md px-4 py-3 border border-white/5">
               Private parties &amp; milestone birthdays
             </div>
-            <div className="bg-gray-800/70 rounded-md px-4 py-3">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-md px-4 py-3 border border-white/5">
               Corporate events &amp; company parties
             </div>
-            <div className="bg-gray-800/70 rounded-md px-4 py-3">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-md px-4 py-3 border border-white/5">
               HOA / neighborhood events
             </div>
-            <div className="bg-gray-800/70 rounded-md px-4 py-3">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-md px-4 py-3 border border-white/5">
               Breweries &amp; bar special events
             </div>
-            <div className="bg-gray-800/70 rounded-md px-4 py-3">
+            <div className="bg-gray-900/65 backdrop-blur-sm rounded-md px-4 py-3 border border-white/5">
               Festivals, fundraisers, &amp; community events
             </div>
           </div>
         </section>
 
         <section className="mt-12 sm:mt-16">
-          <div className="bg-gray-800 rounded-lg p-6 sm:p-8">
+          <div className="bg-gray-900/70 backdrop-blur-md rounded-lg p-6 sm:p-8 border border-white/10">
             <h2 className="text-2xl font-semibold text-white mb-4">
               Professional, turnkey experience
             </h2>
