@@ -3,6 +3,10 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 
+const defaultHeroVideoSrc = encodeURI('/Landing Page Video.mp4');
+const heroVideoSrc =
+  process.env.NEXT_PUBLIC_HERO_VIDEO_URL ?? defaultHeroVideoSrc;
+
 export function LogoVideo() {
   const [videoEnded, setVideoEnded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
@@ -70,10 +74,11 @@ export function LogoVideo() {
           }`}
           onEnded={() => setVideoEnded(true)}
         >
-          <source src="https://8seirfiyslx0jmio.public.blob.vercel-storage.com/EchoBlvd_1.mp4" type="video/mp4" />
+          <source src={heroVideoSrc} type="video/mp4" />
         </video>
 
         <button
+          type="button"
           onClick={handleToggleMute}
           className={`absolute bottom-2 right-2 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-all duration-300 ${
             videoEnded ? 'opacity-0 pointer-events-none' : 'opacity-100'
@@ -93,6 +98,7 @@ export function LogoVideo() {
       </div>
 
       <button
+        type="button"
         onClick={handlePlayAgain}
         className={`absolute -bottom-6 right-0 flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-all duration-300 ${
           videoEnded ? 'opacity-100' : 'opacity-0 pointer-events-none'

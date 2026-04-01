@@ -100,11 +100,18 @@ export async function getInstagramFeed(
 
   const url = buildInstagramMediaUrl({ userId, accessToken, limit });
 
+  const isDev = process.env.NODE_ENV === 'development';
+
   try {
-    const response = await fetch(url, {
-      cache: 'force-cache',
-      next: { revalidate: revalidateSeconds },
-    });
+    const response = await fetch(
+      url,
+      isDev
+        ? { cache: 'no-store' }
+        : {
+            cache: 'force-cache',
+            next: { revalidate: revalidateSeconds },
+          }
+    );
 
     if (!response.ok) return [];
 

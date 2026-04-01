@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { unstable_noStore as noStore } from 'next/cache';
 import { AmbientPhotoBackground } from '@/app/components/layout/ambient-photo-background';
 import { pageBackgrounds } from '@/app/lib/page-backgrounds';
 import { getInstagramFeed } from '@/app/lib/instagram';
@@ -32,6 +33,9 @@ function getTimestampLabel(timestamp: string): string {
 }
 
 export default async function SocialPage() {
+  // Skip static prerender so runtime env (Vercel) is used; noStore is page-scoped
+  // so @/app/lib/instagram stays testable without loading next/cache in Jest.
+  noStore();
   const posts = await getInstagramFeed({ limit: 12 });
 
   return (
