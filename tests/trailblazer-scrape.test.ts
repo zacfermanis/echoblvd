@@ -11,7 +11,10 @@ import {
   mergeStructuredBadgeEntries,
 } from '@/lib/trailblazer/badge-extract';
 import { authorizeTrailblazerScrapeRequest, getBearerToken } from '@/lib/trailblazer/auth';
-import { isAccessDeniedHtml } from '@/lib/trailblazer/browser-context';
+import {
+  buildTrailblazerExtraHttpHeaders,
+  isAccessDeniedHtml,
+} from '@/lib/trailblazer/browser-context';
 import { buildCorsHeaders, resolveCorsOrigin } from '@/lib/trailblazer/cors';
 import { extractHtmlFromMhtmlRawContent } from '@/lib/trailblazer/mhtml';
 import { validateTrailblazerProfileUrl } from '@/lib/trailblazer/url';
@@ -115,6 +118,14 @@ describe('Trailblazer scrape helpers', () => {
       expect(isAccessDeniedHtml('<html>Access Denied</html>')).toBe(true);
       expect(isAccessDeniedHtml('<html>errors.edgesuite.net</html>')).toBe(true);
       expect(isAccessDeniedHtml('<html>Welcome Trailblazer</html>')).toBe(false);
+    });
+  });
+
+  describe('browser request headers', () => {
+    it('includes chrome client hints for the configured major version', () => {
+      const headers = buildTrailblazerExtraHttpHeaders('en-US,en;q=0.9');
+      expect(headers['sec-ch-ua']).toContain('Chrome";v="147"');
+      expect(headers.accept).toContain('text/html');
     });
   });
 
