@@ -1,17 +1,10 @@
 # Active Context: Echo Blvd Band Website
 
 ## Current Work Focus
-**Phase 1: Project Initialization - COMPLETED**
-- ✅ Next.js project with TypeScript and Tailwind initialized
-- ✅ Project structure and development environment established
-- ✅ Memory Bank documentation created and maintained
-
-**Phase 2: Core Structure - COMPLETED**
-- ✅ Root layout with navigation
-- ✅ Homepage with hero section
-- ✅ Basic page routing (music, shows, about, contact)
-- ✅ Responsive design foundation
-- ✅ SEO metadata setup
+**Trailblazer scrape API for external consumer site - COMPLETED**
+- ✅ Secret-protected `POST /api/trailblazer/scrape`
+- ✅ Full Playwright scrape pipeline (hydrate, Show More, network/DOM/MHTML badges)
+- ✅ Hybrid browser launch: remote WS → `@sparticuz/chromium` on Vercel → local fallbacks
 
 **Phase 3: Content Implementation - IN PROGRESS**
 - ✅ Music showcase page (with YouTube video embed)
@@ -20,6 +13,8 @@
 - ✅ Contact page with form
 
 ## Recent Changes
+- ✅ **ADDED: Trailblazer scrape API** at `/api/trailblazer/scrape` with Bearer auth, CORS allowlist, and full structured-badge scrape pipeline under `src/lib/trailblazer/`
+- ✅ **ADDED: Dependencies** `playwright-core` + `@sparticuz/chromium`; `serverExternalPackages` in Next config
 - ✅ Created Memory Bank structure with core documentation files
 - ✅ Defined project requirements and technical specifications
 - ✅ Established development patterns and TDD workflow
@@ -63,7 +58,11 @@
 - ✅ **ADDED: Keep-alive API route with optional token gate and Vercel daily cron**
 
 ## Next Steps
-1. **Phase 3: Complete Content Implementation**
+1. **Trailblazer scrape API ops**
+   - Set `TRAILBLAZER_SCRAPE_API_KEY` (and preferably `PLAYWRIGHT_WS_ENDPOINT`) in Vercel
+   - Optionally set `TRAILBLAZER_SCRAPE_CORS_ORIGINS` for the consumer site origin
+   - Confirm Vercel plan allows `maxDuration = 60` for this route
+2. **Phase 3: Complete Content Implementation**
    - Expand shows styling (sold out badges, past shows archive)
    - Build about page with band member information
    - ✅ Contact page with form functionality (COMPLETED)

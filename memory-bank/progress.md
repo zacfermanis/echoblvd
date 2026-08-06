@@ -7,6 +7,7 @@
 - **Core Structure**: Navigation, routing, and responsive design foundation
 - **Music Page**: Complete with YouTube video embed, track cards, and social media section
 - **Supabase Keep-Alive**: Daily cron hits `/api/keep-alive` to keep hobby project active
+- **Trailblazer Scrape API**: `POST /api/trailblazer/scrape` returns HTML + structured badge entries via Playwright hybrid launch (WS / sparticuz / local)
 
 ## What's Left to Build
 
