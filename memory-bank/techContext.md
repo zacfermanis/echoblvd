@@ -116,6 +116,21 @@ echoblvd/
 - **Supabase**:
   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (safe for public reads)
   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only)
+- **Trailblazer scrape API** (`POST /api/trailblazer/scrape`):
+  - `TRAILBLAZER_SCRAPE_API_KEY` (required; Bearer token)
+  - `TRAILBLAZER_SCRAPE_CORS_ORIGINS` (comma-separated allowlist for browser clients)
+  - `PLAYWRIGHT_WS_ENDPOINT` (recommended remote Chromium WebSocket for Vercel reliability)
+  - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` (local Chromium override)
+  - `TRAILBLAZER_PROFILE_TIMEOUT_MS` (default `45000`)
+  - Optional: `TRAILBLAZER_BROWSER_USER_AGENT`, `TRAILBLAZER_BROWSER_ACCEPT_LANGUAGE`, `TRAILBLAZER_BROWSER_TIMEZONE`
+
+### Trailblazer Scrape Runtime
+- Uses `playwright-core` (no bundled browser) plus hybrid launch:
+  1. Remote connect via `PLAYWRIGHT_WS_ENDPOINT`
+  2. `@sparticuz/chromium` when running on Vercel/Lambda
+  3. Local channel/executable fallbacks for development
+- Route is Node.js runtime with `maxDuration = 60`
+- Packages marked `serverExternalPackages`: `playwright-core`, `@sparticuz/chromium`
 
 ### Persistence Notes
 - Shows content persists in Supabase `public.shows`. Server uses service role for writes.

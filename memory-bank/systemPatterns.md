@@ -37,6 +37,15 @@ app/
 - **Browser APIs**: Audio players, scroll effects
 - **User interactions**: Hover effects, click handlers
 
+### External Service APIs
+
+#### Trailblazer Scrape API
+- Route: `POST /api/trailblazer/scrape` (Node.js, `maxDuration=60`)
+- Auth: `Authorization: Bearer <TRAILBLAZER_SCRAPE_API_KEY>`
+- Body: `{ "url": "https://www.salesforce.com/trailblazer/<id>" }`
+- Pipeline lives in `src/lib/trailblazer/` (launch, hydration, Show More, network/DOM/MHTML badge extraction)
+- Response includes `html`, `structuredBadgeEntries`, show-more stats, and scrape diagnostics for the consumer site to score locally
+
 ### Data Flow Patterns
 
 #### Static Content
