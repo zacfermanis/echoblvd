@@ -1,10 +1,12 @@
 import type { TrailblazerBrowserProfile } from './types';
 
+// Keep major version aligned with @sparticuz/chromium to avoid UA/browser mismatch fingerprinting.
 export const DEFAULT_TRAILBLAZER_USER_AGENT =
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 13_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36';
 export const DEFAULT_TRAILBLAZER_ACCEPT_LANGUAGE = 'en-US,en;q=0.9';
 export const DEFAULT_TRAILBLAZER_TIMEZONE = 'America/New_York';
-export const DEFAULT_TRAILBLAZER_PROFILE_TIMEOUT_MS = 45000;
+export const DEFAULT_TRAILBLAZER_PROFILE_TIMEOUT_MS = 25000;
+export const DEFAULT_TRAILBLAZER_VIEWPORT = { width: 1366, height: 768 };
 
 function parsePositiveInteger(value: unknown, defaultValue: number): number {
   const parsed = Number.parseInt(String(value || ''), 10);
@@ -32,14 +34,30 @@ export function buildTrailblazerBrowserContextProfiles(): TrailblazerBrowserProf
   };
 
   const fallbackProfile: TrailblazerBrowserProfile = {
-    name: 'fallback-windows-ua',
+    name: 'fallback-mac-ua',
     userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36',
     acceptLanguage: primaryProfile.acceptLanguage,
     timezoneId: primaryProfile.timezoneId,
   };
 
   return [primaryProfile, fallbackProfile];
+}
+
+export function buildTrailblazerExtraHttpHeaders(acceptLanguage: string): Record<string, string> {
+  return {
+    'accept-language': acceptLanguage,
+    accept:
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+    'upgrade-insecure-requests': '1',
+    'sec-ch-ua': '"Google Chrome";v="147", "Not.A/Brand";v="8", "Chromium";v="147"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+  };
 }
 
 export function isAccessDeniedHtml(html: unknown): boolean {

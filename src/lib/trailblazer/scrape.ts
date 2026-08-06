@@ -8,6 +8,8 @@ import {
 } from './badge-extract';
 import {
   buildTrailblazerBrowserContextProfiles,
+  buildTrailblazerExtraHttpHeaders,
+  DEFAULT_TRAILBLAZER_VIEWPORT,
   getTrailblazerProfileTimeoutMs,
   isAccessDeniedHtml,
   summarizeBrowserLaunchError,
@@ -373,14 +375,18 @@ async function runHydrationPhase(
   timeout: number,
   collectFn: () => Promise<PagePresenceDiagnostics>,
   hydrationDiagnostics: HydrationDiagnostics,
-  recordFn: (phase: string, details?: Record<string, unknown>) => void
+  recordFn: (phase: string, details?: Record<string, unknown>) => void,
+  options: { fastFail?: boolean } = {}
 ): Promise<void> {
   const hydrationStart = Date.now();
+  const mainContentTimeout = options.fastFail ? 1500 : Math.min(timeout, 5000);
+  const childrenTimeout = options.fastFail ? 1500 : Math.min(timeout, 8000);
+  const maxProbeRounds = options.fastFail ? 1 : 4;
 
   try {
     await page.waitForSelector('#main-content', {
       state: 'attached',
-      timeout: Math.min(timeout, 5000),
+      timeout: mainContentTimeout,
     });
     hydrationDiagnostics.waitForMainContentSucceeded = true;
   } catch {
@@ -395,7 +401,7 @@ async function runHydrationPhase(
         const main = document.querySelector('#main-content');
         return Boolean(main && main.childElementCount > 0);
       },
-      { timeout: Math.min(timeout, 8000) }
+      { timeout: childrenTimeout }
     );
     hydrationDiagnostics.waitForMainContentChildrenSucceeded = true;
   } catch {
@@ -409,9 +415,10 @@ async function runHydrationPhase(
     waitedForMainContentMs: hydrationDiagnostics.waitedForMainContentMs,
     waitForMainContentChildrenSucceeded: hydrationDiagnostics.waitForMainContentChildrenSucceeded,
     waitedForMainContentChildrenMs: hydrationDiagnostics.waitedForMainContentChildrenMs,
+    fastFail: Boolean(options.fastFail),
   });
 
-  for (let probeRound = 0; probeRound < 4; probeRound += 1) {
+  for (let probeRound = 0; probeRound < maxProbeRounds; probeRound += 1) {
     hydrationDiagnostics.hydrationProbeRounds += 1;
     const probe = await collectFn();
 
@@ -432,8 +439,34 @@ async function runHydrationPhase(
       break;
     }
 
+    if (options.fastFail) break;
     await page.waitForTimeout(500 + probeRound * 250).catch(() => null);
   }
+}
+
+async function applyStealthInitScripts(context: BrowserContext): Promise<void> {
+  await context.addInitScript(() => {
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => undefined,
+    });
+
+    const windowWithChrome = window as Window & {
+      chrome?: { runtime?: Record<string, unknown> };
+    };
+    const existingChrome = windowWithChrome.chrome || {};
+    windowWithChrome.chrome = {
+      ...existingChrome,
+      runtime: existingChrome.runtime || {},
+    };
+
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ['en-US', 'en'],
+    });
+
+    Object.defineProperty(navigator, 'plugins', {
+      get: () => [1, 2, 3, 4, 5],
+    });
+  });
 }
 
 async function tryLocatorEntryClick(
@@ -682,8 +715,10 @@ export async function fetchTrailblazerProfileHtmlWithShowMore(
         userAgent: profile.userAgent,
         locale: profile.acceptLanguage.split(',')[0] || 'en-US',
         timezoneId: profile.timezoneId,
-        extraHTTPHeaders: { 'accept-language': profile.acceptLanguage },
+        viewport: DEFAULT_TRAILBLAZER_VIEWPORT,
+        extraHTTPHeaders: buildTrailblazerExtraHttpHeaders(profile.acceptLanguage),
       });
+      await applyStealthInitScripts(context);
       const page = await context.newPage();
       const networkBadgeEntries: StructuredBadgeEntry[] = [];
       const browserRuntimeDiagnostics = { consoleErrors: [] as Array<{ type: string; text: string }>, pageErrors: [] as string[] };
@@ -763,6 +798,18 @@ export async function fetchTrailblazerProfileHtmlWithShowMore(
           page.evaluate(collectTrailblazerPagePresenceDiagnostics);
         recordTimeline('post-goto');
 
+        // Fail fast when Akamai/Salesforce already served an access-denied interstitial.
+        const earlyHtml = await page.content();
+        const earlyAccessDenied = isAccessDeniedHtml(earlyHtml);
+        if (earlyAccessDenied) {
+          recordTimeline('early-access-denied');
+          logTrailblazerValidation('browser-early-access-denied', {
+            profile: profile.name,
+            browserMode,
+            htmlLength: earlyHtml.length,
+          });
+        }
+
         const hydrationDiagnostics: HydrationDiagnostics = {
           waitedForMainContentMs: 0,
           waitForMainContentSucceeded: false,
@@ -777,14 +824,19 @@ export async function fetchTrailblazerProfileHtmlWithShowMore(
           timeout,
           collectPresenceDiagnostics,
           hydrationDiagnostics,
-          recordTimeline
+          recordTimeline,
+          { fastFail: earlyAccessDenied }
         );
-        const showMoreStats = await runShowMoreAttempt(
-          page,
-          profile,
-          hydrationDiagnostics,
-          recordTimeline
-        );
+
+        const showMoreStats = earlyAccessDenied
+          ? {
+              showMoreClicks: 0,
+              showMoreScanAttempted: false,
+              showMoreScanRounds: 0,
+              showMoreCandidateCount: 0,
+            }
+          : await runShowMoreAttempt(page, profile, hydrationDiagnostics, recordTimeline);
+
         hydrationDiagnostics.postScanProbe = await collectPresenceDiagnostics();
         recordTimeline('post-scan-probe', {
           badgeDetailLinkCount: hydrationDiagnostics.postScanProbe.badgeDetailLinkCount,
@@ -792,19 +844,20 @@ export async function fetchTrailblazerProfileHtmlWithShowMore(
           bodyTextLength: hydrationDiagnostics.postScanProbe.bodyTextLength,
         });
 
-        const { mhtmlStructuredBadgeEntries, cdpMhtmlCaptured } = await captureMhtmlBadges(
-          context,
-          page
-        );
-        const html = await page.content();
-        const domStructuredBadgeEntries = await extractBadgeDetailsFromDom(page);
+        const { mhtmlStructuredBadgeEntries, cdpMhtmlCaptured } = earlyAccessDenied
+          ? { mhtmlStructuredBadgeEntries: [] as StructuredBadgeEntry[], cdpMhtmlCaptured: false }
+          : await captureMhtmlBadges(context, page);
+        const html = earlyAccessDenied ? earlyHtml : await page.content();
+        const domStructuredBadgeEntries = earlyAccessDenied
+          ? []
+          : await extractBadgeDetailsFromDom(page);
         const networkStructuredBadgeEntries = dedupeByNormalizedTitle(networkBadgeEntries);
         const structuredBadgeEntries = mergeStructuredBadgeEntries(
           networkStructuredBadgeEntries,
           domStructuredBadgeEntries,
           mhtmlStructuredBadgeEntries
         );
-        const accessDeniedHtml = isAccessDeniedHtml(html);
+        const accessDeniedHtml = earlyAccessDenied || isAccessDeniedHtml(html);
         const scrapePresenceDiagnostics: ScrapePresenceDiagnostics = {
           ...hydrationDiagnostics,
           scrapeTimeline,

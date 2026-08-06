@@ -152,10 +152,20 @@ async function launchWithSparticuz(
         .join(path.delimiter);
     }
 
+    const stealthArgs = [
+      '--disable-blink-features=AutomationControlled',
+      '--disable-features=IsolateOrigins,site-per-process',
+      '--disable-dev-shm-usage',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--window-size=1366,768',
+    ];
+
     const browser = await chromium.launch({
-      args: chromiumPack.args,
+      args: [...chromiumPack.args, ...stealthArgs],
       executablePath,
       headless: true,
+      ignoreDefaultArgs: ['--enable-automation'],
     });
 
     logTrailblazerValidation('browser-launch-success', { browserMode: 'sparticuz' });

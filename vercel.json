@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "src/app/api/trailblazer/scrape/route.ts": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/(.*)\\.svg",
