@@ -33,6 +33,10 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Google OAuth for local gig-lyrics script
+scripts/google-oauth-credentials.json
+scripts/.google-token.json
+
 # vercel
 .vercel
 
