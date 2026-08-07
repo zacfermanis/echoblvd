@@ -15,7 +15,11 @@ import {
   buildTrailblazerExtraHttpHeaders,
   isAccessDeniedHtml,
 } from '@/lib/trailblazer/browser-context';
-import { buildCorsHeaders, resolveCorsOrigin } from '@/lib/trailblazer/cors';
+import {
+  buildCorsHeaders,
+  buildPreflightHeaders,
+  resolveCorsOrigin,
+} from '@/lib/trailblazer/cors';
 import { extractHtmlFromMhtmlRawContent } from '@/lib/trailblazer/mhtml';
 import { validateTrailblazerProfileUrl } from '@/lib/trailblazer/url';
 
@@ -117,6 +121,21 @@ describe('Trailblazer scrape helpers', () => {
         'Content-Type, Authorization'
       );
       expect(buildCorsHeaders('https://blocked.test')).toEqual({});
+    });
+
+    it('reflects request origin when allowlist is unset so preflight can succeed', () => {
+      delete process.env.TRAILBLAZER_SCRAPE_CORS_ORIGINS;
+      expect(resolveCorsOrigin('http://localhost:3000')).toBe('http://localhost:3000');
+      expect(
+        resolveCorsOrigin(
+          'https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com'
+        )
+      ).toBe('https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com');
+
+      const headers = buildPreflightHeaders('http://localhost:3000');
+      expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:3000');
+      expect(headers['Access-Control-Allow-Methods']).toContain('POST');
+      expect(headers['Access-Control-Allow-Headers']).toContain('Authorization');
     });
   });
 
@@ -298,6 +317,30 @@ describe('Trailblazer scrape API route', () => {
     expect(postResponse.status).toBe(401);
     expect(postResponse.headers.get('Access-Control-Allow-Origin')).toBe(origin);
     expect(postResponse.headers.get('Vary')).toBe('Origin');
+  });
+
+  it('includes CORS headers on OPTIONS even when CORS allowlist env is unset', async () => {
+    delete process.env.TRAILBLAZER_SCRAPE_CORS_ORIGINS;
+    const { OPTIONS } = await import('@/app/api/trailblazer/scrape/route');
+    const origin = 'http://localhost:3000';
+
+    const optionsResponse = await OPTIONS(
+      new NextRequest('http://localhost/api/trailblazer/scrape', {
+        method: 'OPTIONS',
+        headers: {
+          origin,
+          'access-control-request-method': 'POST',
+          'access-control-request-headers': 'content-type,authorization',
+        },
+      })
+    );
+
+    expect(optionsResponse.status).toBe(204);
+    expect(optionsResponse.headers.get('Access-Control-Allow-Origin')).toBe(origin);
+    expect(optionsResponse.headers.get('Access-Control-Allow-Methods')).toBe('POST, OPTIONS');
+    expect(optionsResponse.headers.get('Access-Control-Allow-Headers')).toBe(
+      'Content-Type, Authorization'
+    );
   });
 
   it('rejects invalid Trailblazer URLs', async () => {

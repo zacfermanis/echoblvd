@@ -118,7 +118,7 @@ echoblvd/
   - `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only)
 - **Trailblazer scrape API** (`POST /api/trailblazer/scrape`):
   - `TRAILBLAZER_SCRAPE_API_KEY` (required; Bearer token)
-  - `TRAILBLAZER_SCRAPE_CORS_ORIGINS` (comma-separated browser allowlist; required for client-side calls). Example: `https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com,https://aigentcon-2026.lmig.com,http://localhost:3000`
+  - `TRAILBLAZER_SCRAPE_CORS_ORIGINS` (optional comma-separated browser allowlist). If unset, request `Origin` is reflected. If set, only listed origins are echoed. Example: `https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com,https://aigentcon-2026.lmig.com,http://localhost:3000`
   - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` (local Chromium override)
   - `TRAILBLAZER_PROFILE_TIMEOUT_MS` (default `25000`)
   - Optional: `TRAILBLAZER_BROWSER_USER_AGENT`, `TRAILBLAZER_BROWSER_ACCEPT_LANGUAGE`, `TRAILBLAZER_BROWSER_TIMEZONE`

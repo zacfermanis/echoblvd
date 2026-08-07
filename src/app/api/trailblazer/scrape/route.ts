@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorizeTrailblazerScrapeRequest } from '@/lib/trailblazer/auth';
-import { applyCorsHeaders, buildCorsHeaders } from '@/lib/trailblazer/cors';
+import { applyCorsHeaders, applyPreflightHeaders } from '@/lib/trailblazer/cors';
 import { fetchTrailblazerProfileHtmlWithShowMore } from '@/lib/trailblazer/scrape';
 import { validateTrailblazerProfileUrl } from '@/lib/trailblazer/url';
 
@@ -22,7 +22,8 @@ function jsonWithCors(
 
 export async function OPTIONS(request: NextRequest) {
   const origin = request.headers.get('origin');
-  const headers = buildCorsHeaders(origin);
+  const headers = new Headers();
+  applyPreflightHeaders(headers, origin);
   return new NextResponse(null, {
     status: 204,
     headers,
