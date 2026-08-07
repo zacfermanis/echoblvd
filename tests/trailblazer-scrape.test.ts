@@ -103,13 +103,20 @@ describe('Trailblazer scrape helpers', () => {
   });
 
   describe('cors', () => {
-    it('allows configured origins', () => {
-      process.env.TRAILBLAZER_SCRAPE_CORS_ORIGINS = 'https://app.example.com,https://other.test';
+    it('allows configured origins and normalizes trailing slashes', () => {
+      process.env.TRAILBLAZER_SCRAPE_CORS_ORIGINS =
+        'https://app.example.com/,https://other.test,http://localhost:3000';
       expect(resolveCorsOrigin('https://app.example.com')).toBe('https://app.example.com');
+      expect(resolveCorsOrigin('https://app.example.com/')).toBe('https://app.example.com');
+      expect(resolveCorsOrigin('http://localhost:3000')).toBe('http://localhost:3000');
       expect(resolveCorsOrigin('https://blocked.test')).toBeNull();
       expect(buildCorsHeaders('https://app.example.com')['Access-Control-Allow-Origin']).toBe(
         'https://app.example.com'
       );
+      expect(buildCorsHeaders('https://app.example.com')['Access-Control-Allow-Headers']).toBe(
+        'Content-Type, Authorization'
+      );
+      expect(buildCorsHeaders('https://blocked.test')).toEqual({});
     });
   });
 
@@ -252,6 +259,45 @@ describe('Trailblazer scrape API route', () => {
       ok: false,
       reason: 'Unauthorized.',
     });
+  });
+
+  it('includes CORS headers on OPTIONS and POST error responses for allowed origins', async () => {
+    process.env.TRAILBLAZER_SCRAPE_CORS_ORIGINS =
+      'https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com,http://localhost:3000';
+
+    const { OPTIONS, POST } = await import('@/app/api/trailblazer/scrape/route');
+    const origin = 'https://aigentcon-leaderboard-development.us-east-1.np.pass.lmig.com';
+
+    const optionsResponse = await OPTIONS(
+      new NextRequest('http://localhost/api/trailblazer/scrape', {
+        method: 'OPTIONS',
+        headers: {
+          origin,
+          'access-control-request-method': 'POST',
+          'access-control-request-headers': 'content-type,authorization',
+        },
+      })
+    );
+    expect(optionsResponse.status).toBe(204);
+    expect(optionsResponse.headers.get('Access-Control-Allow-Origin')).toBe(origin);
+    expect(optionsResponse.headers.get('Access-Control-Allow-Methods')).toContain('POST');
+    expect(optionsResponse.headers.get('Access-Control-Allow-Headers')).toContain('Authorization');
+
+    const postResponse = await POST(
+      new NextRequest('http://localhost/api/trailblazer/scrape', {
+        method: 'POST',
+        headers: {
+          origin,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: 'https://www.salesforce.com/trailblazer/johndoe',
+        }),
+      })
+    );
+    expect(postResponse.status).toBe(401);
+    expect(postResponse.headers.get('Access-Control-Allow-Origin')).toBe(origin);
+    expect(postResponse.headers.get('Vary')).toBe('Origin');
   });
 
   it('rejects invalid Trailblazer URLs', async () => {

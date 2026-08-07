@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorizeTrailblazerScrapeRequest } from '@/lib/trailblazer/auth';
-import { buildCorsHeaders } from '@/lib/trailblazer/cors';
+import { applyCorsHeaders, buildCorsHeaders } from '@/lib/trailblazer/cors';
 import { fetchTrailblazerProfileHtmlWithShowMore } from '@/lib/trailblazer/scrape';
 import { validateTrailblazerProfileUrl } from '@/lib/trailblazer/url';
 
@@ -13,62 +13,61 @@ function jsonWithCors(
   init?: { status?: number }
 ): NextResponse {
   const origin = request.headers.get('origin');
-  return NextResponse.json(body, {
+  const response = NextResponse.json(body, {
     status: init?.status,
-    headers: buildCorsHeaders(origin),
   });
+  applyCorsHeaders(response.headers, origin);
+  return response;
 }
 
 export async function OPTIONS(request: NextRequest) {
   const origin = request.headers.get('origin');
   const headers = buildCorsHeaders(origin);
-
-  if (!headers['Access-Control-Allow-Origin']) {
-    return new NextResponse(null, { status: 204 });
-  }
-
-  return new NextResponse(null, { status: 204, headers });
+  return new NextResponse(null, {
+    status: 204,
+    headers,
+  });
 }
 
 export async function POST(request: NextRequest) {
-  const auth = authorizeTrailblazerScrapeRequest(request);
-  if (!auth.isAuthorized) {
-    return jsonWithCors(
-      request,
-      { ok: false, reason: auth.reason || 'Unauthorized.' },
-      { status: auth.failureStatus ?? 401 }
-    );
-  }
-
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return jsonWithCors(
-      request,
-      { ok: false, reason: 'Request body must be valid JSON.' },
-      { status: 400 }
-    );
-  }
+    const auth = authorizeTrailblazerScrapeRequest(request);
+    if (!auth.isAuthorized) {
+      return jsonWithCors(
+        request,
+        { ok: false, reason: auth.reason || 'Unauthorized.' },
+        { status: auth.failureStatus ?? 401 }
+      );
+    }
 
-  const url =
-    typeof body === 'object' && body !== null && 'url' in body
-      ? String((body as { url?: unknown }).url || '').trim()
-      : '';
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return jsonWithCors(
+        request,
+        { ok: false, reason: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
+    }
 
-  if (!validateTrailblazerProfileUrl(url)) {
-    return jsonWithCors(
-      request,
-      {
-        ok: false,
-        reason:
-          'Invalid Trailblazer profile URL. Expected https://www.salesforce.com/trailblazer/<id>.',
-      },
-      { status: 400 }
-    );
-  }
+    const url =
+      typeof body === 'object' && body !== null && 'url' in body
+        ? String((body as { url?: unknown }).url || '').trim()
+        : '';
 
-  try {
+    if (!validateTrailblazerProfileUrl(url)) {
+      return jsonWithCors(
+        request,
+        {
+          ok: false,
+          reason:
+            'Invalid Trailblazer profile URL. Expected https://www.salesforce.com/trailblazer/<id>.',
+        },
+        { status: 400 }
+      );
+    }
+
     const result = await fetchTrailblazerProfileHtmlWithShowMore(url);
 
     if (!result.ok) {
